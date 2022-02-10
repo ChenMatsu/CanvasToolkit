@@ -1,0 +1,24 @@
+@import "./base.scss";
+
+@import url("https://fonts.googleapis.com/css2?family=Dongle:wght@300;400;700&family=Noto+Sans+JP:wght@100;300;500&family=Noto+Serif+TC:wght@300;400;500&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100;300;500&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Dongle:wght@300;400;700&family=Noto+Sans+JP:wght@100;300;500&display=swap");
+
+html,
+body {
+  margin: 0;
+  font-family: "Noto Serif TC", "Dongle", "Noto Sans JP", sans-serif;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+#root {
+  width: 100vw;
+  min-height: 100vh;
+  height: auto;
+  display: block;
+  position: relative;
+  background: $main-visual-color;
+}

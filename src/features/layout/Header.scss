@@ -1,0 +1,42 @@
+@import "../../base.scss";
+
+#layout-header {
+  @extend %flex-common;
+  border-bottom: $base-line-width solid $main-component-color;
+  ul {
+    margin: 0;
+    list-style: none;
+  }
+
+  ul:first-child,
+  ul:last-child {
+    @extend %flex-common;
+
+    color: $main-reverse-color;
+    li {
+      margin: $base-margin * 4 0 $base-margin * 4 0;
+      padding: $base-padding * 2;
+      cursor: pointer;
+
+      &:hover {
+        background-color: $main-component-color;
+        border-radius: $base-border-radius;
+      }
+    }
+  }
+
+  ul:first-child {
+    padding-left: $base-padding * 4;
+  }
+
+  ul:last-child {
+    padding-left: 0;
+    padding-right: $base-padding * 4;
+  }
+}
+
+.header-icons {
+  font-size: 125%;
+  vertical-align: sub;
+  margin-right: $base-margin;
+}

@@ -1,0 +1,18 @@
+$main-visual-color: #3655b3;
+$main-auxiliary-visual-color: #4d4dff;
+$main-text-color: #d3deff;
+$main-component-color: #a6bcff;
+$main-reverse-color: #ffffff;
+
+$base-width: 0.25rem;
+$base-height: 0.25rem;
+$base-margin: 0.25rem;
+$base-padding: 0.25rem;
+$base-line-width: 0.05rem;
+$base-border-radius: 0.25rem;
+
+%flex-common {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
