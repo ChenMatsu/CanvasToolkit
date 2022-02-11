@@ -1,0 +1,30 @@
+@import "../../base.scss";
+
+#workspace-topbar {
+    display: flex;
+    justify-content: space-between;
+
+    ul {
+        display: flex;
+        justify-content: space-around;
+        width: $base-width * 40;
+        margin: $base-margin * 2;
+        padding: 0;
+        list-style: none;
+        color: $main-text-color;
+
+        li {
+            padding: $base-padding ;
+            cursor: pointer;
+
+            &:hover {
+                border-radius: $base-border-radius;
+                background-color: $main-component-color;
+            }
+        }
+    }
+}
+
+.workspace-topbar-icons {
+    font-size: 150%;
+}

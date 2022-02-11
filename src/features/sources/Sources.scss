@@ -1,0 +1,14 @@
+@import "../../base.scss";
+
+#sources {
+    @extend %border-right-common;
+
+    width: 25%;
+    padding: $base-padding * 2 $base-padding * 4;
+    overflow-y: scroll;
+}
+
+#sources-material {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}

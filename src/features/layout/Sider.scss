@@ -1,7 +1,8 @@
 @import "../../base.scss";
 
 #layout-sider {
-    border-right: $base-line-width solid $main-component-color;
+    @extend %border-right-common;
+    width: 5%;
 
     ul {
         margin: 0;

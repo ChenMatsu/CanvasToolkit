@@ -12,7 +12,11 @@ $base-line-width: 0.05rem;
 $base-border-radius: 0.25rem;
 
 %flex-common {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+%border-right-common {
+    border-right: $base-line-width solid $main-component-color;
 }

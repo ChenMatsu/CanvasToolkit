@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { BiPlusCircle, BiDoorOpen, BiSave, BiLink, BiChat, BiInfoCircle, BiDownload } from "react-icons/bi";
+import { BiPlusCircle, BiDoorOpen, BiSave, BiWorld, BiLink, BiChat, BiInfoCircle, BiDownload } from "react-icons/bi";
 import "./Header.scss";
 
 const Header = () => {
@@ -20,6 +20,9 @@ const Header = () => {
             </ul>
 
             <ul>
+                <li>
+                    <BiWorld className="header-icons" /> {t("HeaderRight_Language")}
+                </li>
                 <li>
                     <BiLink className="header-icons" /> {t("HeaderRight_Link")}
                 </li>
