@@ -19,8 +19,8 @@
       cursor: pointer;
 
       &:hover {
-        background-color: $main-component-color;
         border-radius: $base-border-radius;
+        background-color: $main-component-color;
       }
     }
   }

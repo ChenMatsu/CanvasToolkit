@@ -1,3 +1,5 @@
+import "./Content.scss";
+
 interface ChildProps {
   children: React.ReactNode;
 }

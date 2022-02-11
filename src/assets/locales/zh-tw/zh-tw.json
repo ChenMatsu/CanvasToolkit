@@ -1,7 +1,16 @@
 {
-  "Layout": {
-    "HeaderLeft_New": "建立新版",
-    "HeaderLeft_Open": "開啟檔案",
-    "HeaderLeft_Save": "儲存檔案"
-  }
+    "Layout": {
+        "HeaderLeft_New": "建立新版",
+        "HeaderLeft_Open": "開啟檔案",
+        "HeaderLeft_Save": "儲存檔案",
+        "HeaderRight_Link": "臉書",
+        "HeaderRight_Chat": "聯繫",
+        "HeaderRight_About": "關於",
+        "HeaderRight_Download": "下載",
+        "SiderMenu_Template": "模板",
+        "SiderMenu_Element": "元素",
+        "SiderMenu_Text": "字樣",
+        "SiderMenu_Image": "圖片",
+        "SiderMenu_Resize": "縮放"
+    }
 }

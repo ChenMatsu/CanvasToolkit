@@ -1,0 +1,34 @@
+@import "../../base.scss";
+
+#layout-sider {
+    border-right: $base-line-width solid $main-component-color;
+
+    ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        color: $main-reverse-color;
+
+        li {
+            text-align: center;
+            width: $base-width * 12;
+            height: $base-height * 12;
+            padding: $base-padding * 4;
+            cursor: pointer;
+
+            &:hover {
+                border-radius: $base-border-radius;
+                background-color: $main-component-color;
+            }
+
+            h6 {
+                margin: 0;
+            }
+        }
+    }
+}
+
+.sider-icons {
+    font-size: 175%;
+    vertical-align: sub;
+}
