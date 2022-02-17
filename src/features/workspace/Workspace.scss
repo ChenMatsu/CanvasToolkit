@@ -15,5 +15,6 @@
         margin: auto;
         background: $main-reverse-color;
         border: $base-line-width * 4 solid $main-component-color;
+        border-bottom: none;
     }
 }

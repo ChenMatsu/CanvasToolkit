@@ -14,7 +14,7 @@
         color: $main-text-color;
 
         li {
-            padding: $base-padding ;
+            padding: $base-padding * 2 $base-padding * 2;
             cursor: pointer;
 
             &:hover {

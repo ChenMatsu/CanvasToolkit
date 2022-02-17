@@ -12,7 +12,6 @@
 
         li {
             text-align: center;
-            width: $base-width * 12;
             height: $base-height * 12;
             padding: $base-padding * 4;
             cursor: pointer;
@@ -32,4 +31,12 @@
 .sider-icons {
     font-size: 175%;
     vertical-align: sub;
+}
+
+.sider-lists {
+    transition: 1s;
+
+    &.active {
+        background-color: $main-component-color;
+    }
 }

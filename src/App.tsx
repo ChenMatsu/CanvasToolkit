@@ -1,9 +1,8 @@
-import React from "react";
 import Content from "./features/layout/Content";
 import Header from "./features/layout/Header";
 import Sider from "./features/layout/Sider";
 import Sources from "./features/sources/Sources";
-import Workspace from "./features/workspace/MainWorkspace";
+import Workspace from "./features/workspace/Workspace";
 
 function App() {
     return (

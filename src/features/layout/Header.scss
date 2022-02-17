@@ -8,6 +8,15 @@
     ul {
         margin: 0;
         list-style: none;
+
+        a {
+            text-decoration: none;
+        }
+
+        li {
+            color: $main-text-color;
+            padding: 16px;
+        }
     }
 
     ul:first-child,
