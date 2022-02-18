@@ -1,5 +1,11 @@
 @import "../../base.scss";
 
 .source-material-card {
-    margin: $base-margin * 2 auto;
+    padding: $base-padding * 4;
+
+    img {
+        width: 80%;
+        height: 100%;
+        object-fit: cover;
+    }
 }

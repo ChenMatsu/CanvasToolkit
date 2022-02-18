@@ -12,27 +12,27 @@ const Sider = () => {
 
     const SIDER_ITEMS = [
         {
-            key: "template",
-            icon: <BiLayout className="sider-icons" />,
-            text: `${t("SiderMenu_Template")}`,
-        },
-        {
-            key: "element",
+            key: "elements",
             icon: <BiCategory className="sider-icons" />,
             text: `${t("SiderMenu_Element")}`,
         },
         {
-            key: "text",
+            key: "templates",
+            icon: <BiLayout className="sider-icons" />,
+            text: `${t("SiderMenu_Template")}`,
+        },
+        {
+            key: "texts",
             icon: <BiText className="sider-icons" />,
             text: `${t("SiderMenu_Text")}`,
         },
         {
-            key: "photoAlbum",
+            key: "photos",
             icon: <BiPhotoAlbum className="sider-icons" />,
             text: `${t("SiderMenu_Image")}`,
         },
         {
-            key: "resize",
+            key: "resizes",
             icon: <BiFullscreen className="sider-icons" />,
             text: `${t("SiderMenu_Resize")}`,
         },

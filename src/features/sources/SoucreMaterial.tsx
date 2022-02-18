@@ -2,7 +2,7 @@ import { useAppSelector, useAppDispatch } from "../../app/hooks";
 import { onDrag } from "./sourceSlice";
 import "./SourceMaterial.scss";
 
-const SourceMaterial = (props: any) => {
+const SourceMaterial = (props: { card: { src: string } }) => {
     const dispatch = useAppDispatch();
 
     const onDragMaterialStart = (e: any) => {
@@ -11,7 +11,7 @@ const SourceMaterial = (props: any) => {
 
     return (
         <div className="source-material-card">
-            <img draggable src={props.card.src} width={60} height={60} onDragStart={onDragMaterialStart} />
+            <img draggable src={props.card.src} onDragStart={onDragMaterialStart} />
         </div>
     );
 };

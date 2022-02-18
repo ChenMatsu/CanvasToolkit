@@ -28,6 +28,7 @@
             margin: $base-margin * 4 0 $base-margin * 4 0;
             padding: $base-padding * 2;
             cursor: pointer;
+            transition: 0.4s;
 
             &:hover {
                 border-radius: $base-border-radius;

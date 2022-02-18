@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState, AppThunk } from "../../app/store";
+import Konva from "konva";
 
 interface ImageState {
     x: number;
@@ -18,6 +19,7 @@ interface SourcesState {
             y2: number;
         };
     };
+    materials: [];
 }
 
 const initialState: SourcesState = {
@@ -35,12 +37,16 @@ const initialState: SourcesState = {
             y2: 0,
         },
     },
+    materials: [],
 };
 
 export const sourcesSlice = createSlice({
     name: "source",
     initialState,
     reducers: {
+        onSwitchMaterials: (state, action) => {
+            state.materials = action.payload;
+        },
         onDrag: (state, action) => {
             state.image.src = action.payload;
         },
@@ -89,31 +95,25 @@ export const sourcesSlice = createSlice({
             // }
             // });
         },
-        onMouseDownTouchStart: (state, action) => {
+        onMouseDown: (state, action) => {
             state.transformer.selection.x1 = action.payload.stage.getPointerPosition().x;
             state.transformer.selection.y1 = action.payload.stage.getPointerPosition().y;
             state.transformer.selection.x2 = action.payload.stage.getPointerPosition().x;
             state.transformer.selection.y2 = action.payload.stage.getPointerPosition().y;
-
-            action.payload.selectionRect.visible(true);
-            action.payload.selectionRect.width(0);
-            action.payload.selectionRect.height(0);
         },
-        onMouseMoveTouchMove: (state, action) => {
-            console.log(action.payload);
+        onMouseMove: (state, action) => {
             state.transformer.selection.x2 = action.payload.stage.getPointerPosition().x;
             state.transformer.selection.y2 = action.payload.stage.getPointerPosition().y;
-
-            action.payload.selectionRect.setAttrs({
-                x: Math.min(action.payload.transformer.selection.x1, action.payload.transformer.selection.x2),
-                y: Math.min(action.payload.transformer.selection.y1, action.payload.transformer.selection.y2),
-                width: Math.abs(action.payload.transformer.selection.x2 - action.payload.transformer.selection.x1),
-                height: Math.abs(action.payload.transformer.selection.y2 - action.payload.transformer.selection.y1),
-            });
+        },
+        onMouseUp: (state, action) => {
+            // const shapes = action.payload.stage.find(".selection-rect");
+            // const box = action.payload.selectionRect.getClientRect();
+            // const selected = shapes.filter((shape: any) => Konva.Util.haveIntersection(box, shape.getClientRect()));
+            // action.payload.transformerRef.nodes(selected);
         },
     },
 });
 
-export const { onDrag, onDrop, onDownload, onClickTap, onMouseDownTouchStart, onMouseMoveTouchMove } = sourcesSlice.actions;
+export const { onDrag, onDrop, onSwitchMaterials, onDownload, onClickTap, onMouseDown, onMouseMove, onMouseUp } = sourcesSlice.actions;
 
 export default sourcesSlice.reducer;

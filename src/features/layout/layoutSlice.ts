@@ -1,12 +1,11 @@
-import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { RootState, AppThunk } from "../../app/store";
+import { createSlice } from "@reduxjs/toolkit";
 
 interface LayoutState {
     siderItem: string;
 }
 
 const initialState: LayoutState = {
-    siderItem: "template",
+    siderItem: "elements",
 };
 
 export const layoutSlice = createSlice({
