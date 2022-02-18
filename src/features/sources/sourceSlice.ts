@@ -2,7 +2,7 @@ import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState, AppThunk } from "../../app/store";
 import Konva from "konva";
 
-interface ImageState {
+export interface ImageState {
     x: number;
     y: number;
     src: string;

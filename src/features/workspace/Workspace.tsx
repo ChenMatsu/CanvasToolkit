@@ -1,20 +1,32 @@
-import React, { DragEvent, useCallback, useEffect, useRef } from "react";
-import { Stage, Layer, Image, Rect, Transformer } from "react-konva";
+import { DragEvent, useCallback, useEffect, useRef } from "react";
+import { Stage, Layer, Group, Image, Rect, Transformer } from "react-konva";
 import { Stage as StageType } from "konva/lib/Stage";
 import { Rect as RectType } from "konva/lib/shapes/Rect";
+import { KonvaEventObject } from "konva/lib/Node";
 import { Transformer as TransformerType } from "konva/lib/shapes/Transformer";
 import Konva from "konva";
 import useImage from "use-image";
 import { useAppSelector, useAppDispatch } from "../../app/hooks";
-import { onDrop, onClickTap, onMouseDown, onMouseMove, onMouseUp } from "../sources/sourceSlice";
+import { onDrop, onClickTap, onMouseDown, onMouseMove, onMouseUp, ImageState } from "../sources/sourceSlice";
 import { onStoreStage } from "./workspaceSlice";
 import TopBar from "./TopBar";
 import "./Workspace.scss";
-import { KonvaEventObject } from "konva/lib/Node";
 
 const URLImage = ({ image }: { image: { src: string; x: number; y: number } }) => {
     const [img] = useImage(image.src, "anonymous");
-    return <Image draggable image={img} x={image.x} y={image.y} offsetX={img ? img.width / 2 : 0} offsetY={img ? img.height / 2 : 0} />;
+    return (
+        <Image
+            draggable
+            name="image"
+            image={img}
+            x={image.x}
+            y={image.y}
+            offsetX={img ? img.width / 2 : 0}
+            offsetY={img ? img.height / 2 : 0}
+            onDragMove={(e) => e.evt.preventDefault()}
+            onDragEnd={(e) => e.evt.preventDefault()}
+        />
+    );
 };
 
 const Workspace = () => {
@@ -47,29 +59,42 @@ const Workspace = () => {
     }, []);
 
     const onClickTapShape = (event: KonvaEventObject<MouseEvent>) => {
+
+        
+
+        console.log(rectRef.current?.visible());
         if (rectRef.current?.visible()) {
             return;
         }
 
-        console.log(event);
-
-        console.log(stageRef);
         if (event.target === stageRef.current) {
             transformerRef.current?.nodes([]);
             return;
         }
 
-        console.log(transformerRef.current?.getNodes());
-        // const isSelected = transformerRef.current?.nodes().indexOf(event.target)! >= 0;
-        const nodes = transformerRef.current!.nodes().concat([event.target]);
-        console.log(nodes);
-        transformerRef.current?.nodes(nodes);
+        if (!event.target.hasName("image")) {
+            return;
+        }
 
-        // if (!action.payload.isSelected) {
-        //     action.payload.transformer.nodes([action.payload.event.target]);
-        // }
-        // const nodes = action.payload.transformer.nodes().concat([action.payload.event.target]);
-        // action.payload.transformer.nodes(nodes);
+        const metaPressed = event.evt.shiftKey || event.evt.ctrlKey || event.evt.metaKey;
+        const isSelected = transformerRef.current?.nodes().indexOf(event.target)! >= 0;
+
+        if (!metaPressed && !isSelected) {
+            // If no key pressed and the node is not selected, select just one
+            transformerRef.current?.nodes([event.target]);
+        } else if (metaPressed && isSelected) {
+            // If we pressed keys and node was selected, we need to remove it from selection:
+            const nodes = transformerRef.current?.nodes().slice()!; // use slice to have new copy of array
+            // Remove node from array)
+            nodes.splice(nodes.indexOf(event.target), 1);
+            transformerRef.current?.nodes(nodes);
+        } else if (metaPressed && !isSelected) {
+            // Add the node into selection
+            const nodes = transformerRef.current?.nodes().concat([event.target])!;
+            transformerRef.current?.nodes(nodes);
+        }
+        console.log(transformerRef.current?.getNodes());
+
         // dispatch(
         //     onClickTap({
         //         event: event,
@@ -88,7 +113,7 @@ const Workspace = () => {
         }
         e.evt.preventDefault();
 
-        // dispatch(onMouseDown({ stage: stageRef.current }));
+        // dispatch(onMouseDown({ stage: stageRef.cu    rrent }));
 
         x1 = stageRef.current?.getPointerPosition()!.x;
         y1 = stageRef.current?.getPointerPosition()!.y;
@@ -103,17 +128,18 @@ const Workspace = () => {
         if (!rectRef.current?.visible()) {
             return;
         }
+
         e.evt.preventDefault();
 
         x2 = stageRef.current?.getPointerPosition()!.x as number;
         y2 = stageRef.current?.getPointerPosition()!.y as number;
 
         rectRef.current.setAttrs({
-            // x: Math.min(transformer.selection.x1, transformer.selection.x2),
             x: Math.min(x1, x2),
             y: Math.min(y1, y2),
             width: Math.abs(x2 - x1),
             height: Math.abs(y2 - y1),
+            // x: Math.min(transformer.selection.x1, transformer.selection.x2),
             // y: Math.min(transformer.selection.y1, transformer.selection.y2),
             // width: Math.abs(transformer.selection.x2 - transformer.selection.x1),
             // height: Math.abs(transformer.selection.y2 - transformer.selection.y1),
@@ -132,14 +158,14 @@ const Workspace = () => {
         }
         e.evt.preventDefault();
 
-        // update visibility in timeout, so we can check it in click event
+        // Update visibility in timeout, so we can check it in click event
         setTimeout(() => {
             rectRef.current?.visible(false);
         });
 
-        const shapes = stageRef.current?.find(".rect")!;
-        const box = rectRef.current?.getClientRect();
-        const selected = shapes.filter((shape: any) => Konva.Util.haveIntersection(box, shape.getClientRect()));
+        const shapes = stageRef.current?.find(".image")!;
+        let box = rectRef.current?.getClientRect();
+        let selected = shapes.filter((shape: Konva.Node) => Konva.Util.haveIntersection(box, shape.getClientRect()));
         transformerRef.current?.nodes(selected);
         // dispatch(
         //     onMouseUp({
@@ -195,10 +221,12 @@ const Workspace = () => {
                             height={stageRef.current?.height()}
                             fill="#343f4b"
                         />
+
                         <Rect ref={rectRef} name="rect" fill="rgba(0,0,255,0.5)" visible={false} />
-                        {images.map((image: any, index: number) => {
+                        {images.map((image: ImageState, index: number) => {
                             return <URLImage key={index} image={image} />;
                         })}
+
                         <Transformer ref={transformerRef} />
                     </Layer>
                 </Stage>

@@ -1,5 +1,7 @@
+import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import SourceMaterial from "./SoucreMaterial";
+import { onSwitchMaterials } from "./sourceSlice";
 import "./Sources.scss";
 
 import CIRCLE_T1 from "../../assets/images/1-circle-1.svg";
@@ -9,8 +11,6 @@ import TRIANGLE2_T1 from "../../assets/images/4-triangle2-1.svg";
 import POLY_T1 from "../../assets/images/5-poly-1.svg";
 import POLY2_T1 from "../../assets/images/6-poly-1.svg";
 import ARROW_T1 from "../../assets/images/7-arrow-1.svg";
-import { onSwitchMaterials } from "./sourceSlice";
-import { useEffect } from "react";
 
 const ELEMENTS = [
     {
