@@ -1,19 +1,19 @@
 version: "3.3"
 
 networks:
-  develop:
-    driver: bridge
+    zd-2d:
+        driver: bridge
 
 services:
-  frontend:
-    build: ./
-    container_name: zd-2d-toolkit
-    volumes:
-      - ./src:/app/src
-    ports:
-      - 3001:3000
-    stdin_open: true
-    tty: true
-    restart: always
-    networks:
-      - develop
+    frontend:
+        build: ./
+        container_name: zd-2d-toolkit
+        volumes:
+            - ./src:/app/src
+        ports:
+            - 3000:3000
+        stdin_open: true
+        tty: true
+        restart: always
+        networks:
+            - zd-2d

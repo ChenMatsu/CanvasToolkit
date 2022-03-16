@@ -1,7 +1,8 @@
 import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import SourceMaterial from "./SoucreMaterial";
-import { onSwitchMaterials } from "./sourceSlice";
+import { onSwitchMaterials, onUploadImages } from "./sourceSlice";
+import { BiCloudUpload } from "react-icons/bi";
 import "./Sources.scss";
 
 import CIRCLE_T1 from "../../assets/images/1-circle-1.svg";
@@ -11,6 +12,7 @@ import TRIANGLE2_T1 from "../../assets/images/4-triangle2-1.svg";
 import POLY_T1 from "../../assets/images/5-poly-1.svg";
 import POLY2_T1 from "../../assets/images/6-poly-1.svg";
 import ARROW_T1 from "../../assets/images/7-arrow-1.svg";
+import { useTranslation } from "react-i18next";
 
 const ELEMENTS = [
     {
@@ -155,6 +157,7 @@ const resizes: any = [...TEMPLATES];
 
 const Sources = () => {
     const dispatch = useAppDispatch();
+    const { t } = useTranslation(["Sources"]);
     const { siderItem } = useAppSelector((state) => state.layout);
     const { materials } = useAppSelector((state) => state.source);
 
@@ -168,6 +171,8 @@ const Sources = () => {
                 return dispatch(onSwitchMaterials(texts));
             case "photos":
                 return dispatch(onSwitchMaterials(photos));
+            case "upload":
+                return dispatch(onSwitchMaterials([]));
             case "resizes":
                 return dispatch(onSwitchMaterials(resizes));
         }
@@ -179,6 +184,35 @@ const Sources = () => {
 
     return (
         <div id="sources">
+            {siderItem === "upload" ? (
+                <div id="sources-operations">
+                    <h3>{t("UploadTitle")}</h3>
+                    <input
+                        id="sources-upload"
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        hidden
+                        onChange={(e) => {
+                            let images: string[] = [];
+                            for (let i = 0; i < e.target.files!.length; i++) {
+                                const reader = new FileReader();
+                                reader.readAsDataURL(e.target.files![i]);
+                                reader.onload = async (e) => {
+                                    // images = [...images, e.target?.result as string];
+                                    dispatch(onUploadImages(e.target?.result as string));
+                                };
+                            }
+                        }}
+                    />
+                    <button
+                        onClick={() => {
+                            document.getElementById("sources-upload")?.click();
+                        }}>
+                        <BiCloudUpload style={{ fontSize: "175%", verticalAlign: "bottom" }} /> {t("UploadButton")}
+                    </button>
+                </div>
+            ) : null}
             <div
                 id="sources-material"
                 style={{

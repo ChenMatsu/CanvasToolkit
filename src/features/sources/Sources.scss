@@ -11,3 +11,21 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
 }
+
+#sources-operations {
+    h3 {
+        color: $main-text-color;
+        letter-spacing: $base-width;
+        width: 90%;
+        margin: auto;
+        padding: 1rem 0;
+    }
+
+    button {
+        display: block;
+        width: 90%;
+        margin: auto;
+        cursor: pointer;
+        padding: $base-padding;
+    }
+}

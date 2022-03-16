@@ -1,7 +1,7 @@
 import { useAppSelector, useAppDispatch } from "../../app/hooks";
 import { onSiderActive } from "./layoutSlice";
 import { useTranslation } from "react-i18next";
-import { BiLayout, BiText, BiPhotoAlbum, BiCategory, BiFullscreen } from "react-icons/bi";
+import { BiLayout, BiText, BiPhotoAlbum, BiCategory, BiFullscreen, BiCloudUpload } from "react-icons/bi";
 import "./Sider.scss";
 import { useEffect } from "react";
 
@@ -30,6 +30,11 @@ const Sider = () => {
             key: "photos",
             icon: <BiPhotoAlbum className="sider-icons" />,
             text: `${t("SiderMenu_Image")}`,
+        },
+        {
+            key: "upload",
+            icon: <BiCloudUpload className="sider-icons" />,
+            text: `${t("SiderMenu_Upload")}`,
         },
         {
             key: "resizes",

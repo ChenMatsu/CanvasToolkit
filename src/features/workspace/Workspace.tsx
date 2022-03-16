@@ -59,10 +59,6 @@ const Workspace = () => {
     }, []);
 
     const onClickTapShape = (event: KonvaEventObject<MouseEvent>) => {
-
-        
-
-        console.log(rectRef.current?.visible());
         if (rectRef.current?.visible()) {
             return;
         }
@@ -93,7 +89,6 @@ const Workspace = () => {
             const nodes = transformerRef.current?.nodes().concat([event.target])!;
             transformerRef.current?.nodes(nodes);
         }
-        console.log(transformerRef.current?.getNodes());
 
         // dispatch(
         //     onClickTap({

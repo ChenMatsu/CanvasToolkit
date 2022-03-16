@@ -12,6 +12,11 @@
         "SiderMenu_Element": "元素",
         "SiderMenu_Text": "字樣",
         "SiderMenu_Image": "圖片",
+        "SiderMenu_Upload": "上傳",
         "SiderMenu_Resize": "縮放"
+    },
+    "Sources": {
+        "UploadTitle": "點擊上傳電腦內圖片",
+        "UploadButton": "上傳圖片"
     }
 }

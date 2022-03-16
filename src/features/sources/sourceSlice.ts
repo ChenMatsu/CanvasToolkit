@@ -1,6 +1,5 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState, AppThunk } from "../../app/store";
-import Konva from "konva";
 
 export interface ImageState {
     x: number;
@@ -19,7 +18,7 @@ interface SourcesState {
             y2: number;
         };
     };
-    materials: [];
+    materials: { src: string }[];
 }
 
 const initialState: SourcesState = {
@@ -55,6 +54,11 @@ export const sourcesSlice = createSlice({
                 src: action.payload.src,
                 x: action.payload.x,
                 y: action.payload.y,
+            });
+        },
+        onUploadImages: (state, action: PayloadAction<string>) => {
+            state.materials.push({
+                src: action.payload,
             });
         },
         onDownload: (state, action) => {
@@ -114,6 +118,6 @@ export const sourcesSlice = createSlice({
     },
 });
 
-export const { onDrag, onDrop, onSwitchMaterials, onDownload, onClickTap, onMouseDown, onMouseMove, onMouseUp } = sourcesSlice.actions;
+export const { onDrag, onDrop, onSwitchMaterials, onUploadImages, onDownload, onClickTap, onMouseDown, onMouseMove, onMouseUp } = sourcesSlice.actions;
 
 export default sourcesSlice.reducer;
