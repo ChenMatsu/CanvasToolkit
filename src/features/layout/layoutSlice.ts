@@ -1,25 +1,25 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface LayoutState {
-    siderItem: string;
+    currentCategory: string;
 }
 
 const initialState: LayoutState = {
-    siderItem: "elements",
+    currentCategory: "elements",
 };
 
 export const layoutSlice = createSlice({
     name: "layout",
     initialState,
     reducers: {
-        onSiderActive: (state, action) => {
+        onSiderActive: (state, action: PayloadAction<{ prevCategory: string; curCategory: string }>) => {
             // ---- Sider Item Selected Style ----
-            const prevItem = document.getElementById(action.payload.prevItem);
-            const curItem = document.getElementById(action.payload.curItem);
+            const prevItem = document.getElementById(action.payload.prevCategory);
+            const curItem = document.getElementById(action.payload.curCategory);
             prevItem?.classList.remove("active");
             curItem?.classList.add("active");
 
-            state.siderItem = action.payload.curItem;
+            state.currentCategory = action.payload.curCategory;
         },
     },
 });

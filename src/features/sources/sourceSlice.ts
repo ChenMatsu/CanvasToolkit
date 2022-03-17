@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState, AppThunk } from "../../app/store";
+import * as CONST from "../../consts";
 
 export interface ImageState {
     x: number;
@@ -7,9 +8,19 @@ export interface ImageState {
     src: string;
 }
 
+export interface TextState {
+    x: number;
+    y: number;
+    size: number;
+    content: string;
+}
+
 interface SourcesState {
+    isLoading: boolean;
     image: ImageState;
     images: ImageState[];
+    text: TextState;
+    texts: TextState[];
     transformer: {
         selection: {
             x1: number;
@@ -19,15 +30,24 @@ interface SourcesState {
         };
     };
     materials: { src: string }[];
+    currentCategory: string;
 }
 
 const initialState: SourcesState = {
+    isLoading: false,
     image: {
         x: 0,
         y: 0,
         src: "",
     },
     images: [],
+    text: {
+        x: 0,
+        y: 0,
+        size: 0,
+        content: "",
+    },
+    texts: [],
     transformer: {
         selection: {
             x1: 0,
@@ -37,24 +57,41 @@ const initialState: SourcesState = {
         },
     },
     materials: [],
+    currentCategory: "elements",
 };
 
 export const sourcesSlice = createSlice({
     name: "source",
     initialState,
     reducers: {
-        onSwitchMaterials: (state, action) => {
-            state.materials = action.payload;
+        onSwitchMaterials: (state, action: PayloadAction<{ categoryItems: [] }>) => {
+            state.materials = action.payload.categoryItems;
         },
         onDrag: (state, action) => {
             state.image.src = action.payload;
         },
-        onDrop: (state, action) => {
-            state.images.push({
-                src: action.payload.src,
-                x: action.payload.x,
-                y: action.payload.y,
-            });
+        onDragText: (state, action: PayloadAction<{ text: string; size: number }>) => {
+            state.text.content = action.payload.text;
+            state.text.size = action.payload.size;
+        },
+        onDrop: (state, action: PayloadAction<{ currentCategory: string; x: number; y: number; content?: string; src?: string; size?: number }>) => {
+            switch (action.payload.currentCategory) {
+                case CONST.default.SIDER_ITEMS.TEXTS:
+                    state.texts.push({
+                        x: action.payload.x,
+                        y: action.payload.y,
+                        size: action.payload.size!,
+                        content: action.payload.content!,
+                    });
+                    break;
+                default:
+                    state.images.push({
+                        x: action.payload.x,
+                        y: action.payload.y,
+                        src: action.payload.src!,
+                    });
+                    break;
+            }
         },
         onUploadImages: (state, action: PayloadAction<string>) => {
             state.materials.push({
@@ -115,9 +152,31 @@ export const sourcesSlice = createSlice({
             // const selected = shapes.filter((shape: any) => Konva.Util.haveIntersection(box, shape.getClientRect()));
             // action.payload.transformerRef.nodes(selected);
         },
+        onContextMenuDelete: (state, action) => {},
+    },
+    extraReducers: (builder) => {
+        // builder
+        //     .addCase(onSwitchMaterialAsync.pending, (state) => {
+        //         state.isLoading = true;
+        //     })
+        //     .addCase(onSwitchMaterialAsync.fulfilled, (state, action) => {
+        //         state.isLoading = false;
+        //     });
     },
 });
 
-export const { onDrag, onDrop, onSwitchMaterials, onUploadImages, onDownload, onClickTap, onMouseDown, onMouseMove, onMouseUp } = sourcesSlice.actions;
+export const {
+    onDrag,
+    onDragText,
+    onDrop,
+    onSwitchMaterials,
+    onUploadImages,
+    onDownload,
+    onClickTap,
+    onMouseDown,
+    onMouseMove,
+    onMouseUp,
+    onContextMenuDelete,
+} = sourcesSlice.actions;
 
 export default sourcesSlice.reducer;

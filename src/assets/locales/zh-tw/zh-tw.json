@@ -17,6 +17,9 @@
     },
     "Sources": {
         "UploadTitle": "點擊上傳電腦內圖片",
-        "UploadButton": "上傳圖片"
+        "UploadButton": "上傳圖片",
+        "Title": "標題",
+        "Subtitle": "副標題",
+        "Paragraph": "段落"
     }
 }

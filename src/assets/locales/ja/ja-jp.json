@@ -1,3 +1,25 @@
 {
-    
+    "Layout": {
+        "HeaderLeft_New": "新たなファイル",
+        "HeaderLeft_Open": "開く",
+        "HeaderLeft_Save": "保存",
+        "HeaderRight_Language": "言語",
+        "HeaderRight_Link": "フェイスブック",
+        "HeaderRight_Chat": "係り",
+        "HeaderRight_About": "について",
+        "HeaderRight_Download": "ダウンロード",
+        "SiderMenu_Template": "テンプレート",
+        "SiderMenu_Element": "素材",
+        "SiderMenu_Text": "書体",
+        "SiderMenu_Image": "写真",
+        "SiderMenu_Upload": "アップロード",
+        "SiderMenu_Resize": "ズーム"
+    },
+    "Sources": {
+        "UploadTitle": "クリックしてアップロードできます",
+        "UploadButton": "写真をアップロード",
+        "Title": "タイトル",
+        "Subtitle": "サブタイトル",
+        "Paragraph": "段落"
+    }
 }

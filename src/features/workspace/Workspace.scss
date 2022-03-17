@@ -18,3 +18,29 @@
         border-bottom: none;
     }
 }
+
+#shape-menu {
+    display: none;
+    position: absolute;
+    width: $base-width * 18;
+    background-color: white;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.75);
+    border-radius: $base-border-radius;
+    z-index: 100;
+
+    button {
+        width: 100%;
+        background-color: $main-reverse-color;
+        border: none;
+        margin: 0;
+        padding: $base-padding * 2;
+        cursor: pointer;
+        transition: 0.3s;
+        letter-spacing: $base-width / 4;
+
+        &:hover {
+            color: $main-reverse-color;
+            background-color: $main-auxiliary-visual-color;
+        }
+    }
+}

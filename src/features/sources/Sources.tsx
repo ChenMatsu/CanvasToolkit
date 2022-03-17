@@ -1,9 +1,11 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
+import { onDragText, onSwitchMaterials, onUploadImages } from "./sourceSlice";
 import SourceMaterial from "./SoucreMaterial";
-import { onSwitchMaterials, onUploadImages } from "./sourceSlice";
 import { BiCloudUpload } from "react-icons/bi";
 import "./Sources.scss";
+import * as CONST from "../../consts";
 
 import CIRCLE_T1 from "../../assets/images/1-circle-1.svg";
 import RECT_T1 from "../../assets/images/2-rect-1.svg";
@@ -12,7 +14,6 @@ import TRIANGLE2_T1 from "../../assets/images/4-triangle2-1.svg";
 import POLY_T1 from "../../assets/images/5-poly-1.svg";
 import POLY2_T1 from "../../assets/images/6-poly-1.svg";
 import ARROW_T1 from "../../assets/images/7-arrow-1.svg";
-import { useTranslation } from "react-i18next";
 
 const ELEMENTS = [
     {
@@ -158,69 +159,105 @@ const resizes: any = [...TEMPLATES];
 const Sources = () => {
     const dispatch = useAppDispatch();
     const { t } = useTranslation(["Sources"]);
-    const { siderItem } = useAppSelector((state) => state.layout);
-    const { materials } = useAppSelector((state) => state.source);
+    const { currentCategory } = useAppSelector((state) => state.layout);
+    const { isLoading, materials } = useAppSelector((state) => state.source);
 
     const onSelectedSider = () => {
-        switch (siderItem) {
-            case "elements":
-                return dispatch(onSwitchMaterials(elements));
-            case "templates":
-                return dispatch(onSwitchMaterials(templates));
-            case "texts":
-                return dispatch(onSwitchMaterials(texts));
-            case "photos":
-                return dispatch(onSwitchMaterials(photos));
-            case "upload":
-                return dispatch(onSwitchMaterials([]));
-            case "resizes":
-                return dispatch(onSwitchMaterials(resizes));
+        switch (currentCategory) {
+            case CONST.default.SIDER_ITEMS.ELEMENTS:
+                dispatch(onSwitchMaterials({ categoryItems: elements }));
+                break;
+            case CONST.default.SIDER_ITEMS.TEMPLATES:
+                dispatch(onSwitchMaterials({ categoryItems: templates }));
+                break;
+            case CONST.default.SIDER_ITEMS.TEXTS:
+                dispatch(onSwitchMaterials({ categoryItems: texts }));
+                break;
+            case CONST.default.SIDER_ITEMS.PHOTOS:
+                dispatch(onSwitchMaterials({ categoryItems: photos }));
+                break;
+            case CONST.default.SIDER_ITEMS.UPLOAD:
+                dispatch(onSwitchMaterials({ categoryItems: [] }));
+                break;
+            case CONST.default.SIDER_ITEMS.RESIZES:
+                dispatch(onSwitchMaterials({ categoryItems: resizes }));
+                break;
+            default:
+                break;
         }
     };
 
     useEffect(() => {
         onSelectedSider();
-    }, [siderItem]);
+    }, [currentCategory]);
 
     return (
         <div id="sources">
-            {siderItem === "upload" ? (
-                <div id="sources-operations">
-                    <h3>{t("UploadTitle")}</h3>
-                    <input
-                        id="sources-upload"
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        hidden
-                        onChange={(e) => {
-                            let images: string[] = [];
-                            for (let i = 0; i < e.target.files!.length; i++) {
-                                const reader = new FileReader();
-                                reader.readAsDataURL(e.target.files![i]);
-                                reader.onload = async (e) => {
-                                    // images = [...images, e.target?.result as string];
-                                    dispatch(onUploadImages(e.target?.result as string));
-                                };
-                            }
-                        }}
-                    />
-                    <button
-                        onClick={() => {
-                            document.getElementById("sources-upload")?.click();
-                        }}>
-                        <BiCloudUpload style={{ fontSize: "175%", verticalAlign: "bottom" }} /> {t("UploadButton")}
-                    </button>
-                </div>
-            ) : null}
+            {(() => {
+                switch (currentCategory) {
+                    case CONST.default.SIDER_ITEMS.UPLOAD:
+                        return (
+                            <div id="sources-operations">
+                                <h3>{t("UploadTitle")}</h3>
+                                <input
+                                    id="sources-upload"
+                                    type="file"
+                                    accept="image/*"
+                                    multiple
+                                    hidden
+                                    onChange={(e) => {
+                                        for (let i = 0; i < e.target.files!.length; i++) {
+                                            const reader = new FileReader();
+                                            reader.readAsDataURL(e.target.files![i]);
+                                            reader.onload = async (e) => {
+                                                dispatch(onUploadImages(e.target?.result as string));
+                                            };
+                                        }
+                                    }}
+                                />
+                                <button
+                                    onClick={() => {
+                                        document.getElementById("sources-upload")?.click();
+                                    }}>
+                                    <BiCloudUpload style={{ fontSize: "175%", verticalAlign: "bottom" }} /> {t("UploadButton")}
+                                </button>
+                            </div>
+                        );
+                    case CONST.default.SIDER_ITEMS.TEXTS:
+                        return (
+                            <div id="sources-text-boxes">
+                                <h1
+                                    draggable
+                                    onDragStart={(e) => {
+                                        dispatch(onDragText({ text: e.currentTarget.innerText, size: e.currentTarget.getBoundingClientRect().height / 2 }));
+                                    }}>
+                                    {t("Title")}
+                                </h1>
+                                <h3
+                                    draggable
+                                    onDragStart={(e) => {
+                                        dispatch(onDragText({ text: e.currentTarget.innerText, size: e.currentTarget.getBoundingClientRect().height / 2 }));
+                                    }}>
+                                    {t("Subtitle")}
+                                </h3>
+                                <p
+                                    draggable
+                                    onDragStart={(e) => {
+                                        dispatch(onDragText({ text: e.currentTarget.innerText, size: e.currentTarget.getBoundingClientRect().height / 2 }));
+                                    }}>
+                                    {t("Paragraph")}
+                                </p>
+                            </div>
+                        );
+                }
+            })()}
+
             <div
                 id="sources-material"
                 style={{
-                    gridTemplateColumns: siderItem === "elements" ? "1fr 1fr 1fr" : "1fr 1fr",
+                    gridTemplateColumns: currentCategory === CONST.default.SIDER_ITEMS.ELEMENTS ? "1fr 1fr 1fr" : "1fr 1fr",
                 }}>
-                {materials.map((card: any) => (
-                    <SourceMaterial key={card.src} card={card} />
-                ))}
+                {isLoading ? <h3>Loading....</h3> : materials.map((card: any) => <SourceMaterial key={card.src} card={card} />)}
             </div>
         </div>
     );

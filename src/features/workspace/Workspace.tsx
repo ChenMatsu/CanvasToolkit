@@ -1,22 +1,33 @@
 import { DragEvent, useCallback, useEffect, useRef } from "react";
-import { Stage, Layer, Group, Image, Rect, Transformer } from "react-konva";
+import { Stage, Layer, Group, Image, Rect, Text, Transformer } from "react-konva";
 import { Stage as StageType } from "konva/lib/Stage";
 import { Rect as RectType } from "konva/lib/shapes/Rect";
+import { Layer as LayerType } from "konva/lib/Layer";
+import { Image as ImageType } from "konva/lib/shapes/Image";
 import { KonvaEventObject } from "konva/lib/Node";
 import { Transformer as TransformerType } from "konva/lib/shapes/Transformer";
 import Konva from "konva";
 import useImage from "use-image";
 import { useAppSelector, useAppDispatch } from "../../app/hooks";
-import { onDrop, onClickTap, onMouseDown, onMouseMove, onMouseUp, ImageState } from "../sources/sourceSlice";
+import { onDrop, onClickTap, onMouseDown, onMouseMove, onMouseUp, ImageState, TextState } from "../sources/sourceSlice";
 import { onStoreStage } from "./workspaceSlice";
 import TopBar from "./TopBar";
+import * as CONST from "../../consts";
 import "./Workspace.scss";
 
-const URLImage = ({ image }: { image: { src: string; x: number; y: number } }) => {
+const URLImage = ({ image, transformerRef }: { image: { src: string; x: number; y: number }; transformerRef: TransformerType }) => {
     const [img] = useImage(image.src, "anonymous");
+    const imageRef = useRef<ImageType>(null);
+
+    useEffect(() => {
+        const imageNodes = transformerRef.nodes().concat([imageRef.current!]);
+        transformerRef.nodes(imageNodes);
+    }, []);
+
     return (
         <Image
             draggable
+            ref={imageRef}
             name="image"
             image={img}
             x={image.x}
@@ -29,25 +40,48 @@ const URLImage = ({ image }: { image: { src: string; x: number; y: number } }) =
     );
 };
 
+const EditableText = ({ text, transformerRef }: { text: { content: string; x: number; y: number; size: number }; transformerRef: TransformerType }) => {
+    return <Text draggable x={text.x} y={text.y} text={text.content} fontSize={text.size} />;
+};
+
 const Workspace = () => {
     const dispatch = useAppDispatch();
-
     let workspace = document.getElementById("workspace-stage-container")!;
+    let menuNode = document.getElementById("shape-menu")!;
+    let deleteNode = document.getElementById("shape-menu-delete-button");
+    let currentShape: any;
     const stageRef = useRef<StageType>(null);
+    const layerRef = useRef<LayerType>(null);
     const rectRef = useRef<RectType>(null);
     const transformerRef = useRef<TransformerType>(null);
-    const { image, images, transformer } = useAppSelector((state) => state.source);
+
+    const { currentCategory } = useAppSelector((state) => state.layout);
+    const { image, images, text, texts, transformer } = useAppSelector((state) => state.source);
 
     const onDropMaterial = (event: DragEvent) => {
         event.preventDefault();
-
         stageRef.current?.setPointersPositions(event);
-        dispatch(
-            onDrop({
-                ...image,
-                ...stageRef.current?.getPointerPosition(),
-            })
-        );
+
+        switch (currentCategory) {
+            case CONST.default.SIDER_ITEMS.TEXTS:
+                dispatch(
+                    onDrop({
+                        ...text,
+                        ...stageRef.current?.getPointerPosition(),
+                        currentCategory,
+                    })
+                );
+                break;
+            default:
+                dispatch(
+                    onDrop({
+                        ...image,
+                        ...stageRef.current?.getPointerPosition(),
+                        currentCategory,
+                    })
+                );
+                break;
+        }
     };
 
     const fitStageIntoParentContainer = useCallback(() => {
@@ -171,6 +205,32 @@ const Workspace = () => {
         // );
     };
 
+    const onContextMenu = (e: KonvaEventObject<PointerEvent>) => {
+        e.evt.preventDefault();
+
+        if (e.target === stageRef.current) {
+            return;
+        }
+
+        currentShape = e.target;
+        // const containerRect = stageRef.current!.container().getBoundingClientRect();
+        menuNode.style.display = "initial";
+        menuNode.style.top = stageRef.current!.getPointerPosition()!.y - 60 + "px";
+        menuNode.style.left = stageRef.current!.getPointerPosition()!.x + 10 + "px";
+    };
+
+    const onDeleteShape = () => {
+        deleteNode!.addEventListener("click", () => {
+            // TODO: Fixing Delete Transformer
+            // const tr = layerRef.current?.find("Transformer").find((tr) => {});
+            // console.log(tr);
+            // tr.destroy();
+            currentShape.destroy();
+        });
+
+        deleteNode?.click();
+    };
+
     useEffect(() => {
         window.addEventListener("resize", fitStageIntoParentContainer);
 
@@ -180,7 +240,16 @@ const Workspace = () => {
     }, []);
 
     useEffect(() => {
+        window.addEventListener("click", () => {
+            menuNode.style.display = "none";
+        });
+    }, [window.innerWidth]);
+
+    useEffect(() => {
         workspace = document.getElementById("workspace-stage-container") as HTMLDivElement;
+        menuNode = document.getElementById("shape-menu") as HTMLDivElement;
+        deleteNode = document.getElementById("shape-menu-delete-button") as HTMLDivElement;
+
         stageRef.current?.width(workspace.offsetWidth);
         stageRef.current?.height(workspace.offsetHeight);
 
@@ -195,6 +264,13 @@ const Workspace = () => {
         <div id="workspace">
             <TopBar />
             <div id="workspace-stage-container" onDrop={onDropMaterial} onDragOver={(e) => e.preventDefault()}>
+                <div id="shape-menu">
+                    <div>
+                        <button id="shape-menu-delete-button" onClick={onDeleteShape}>
+                            <span>Delete</span>
+                        </button>
+                    </div>
+                </div>
                 <Stage
                     ref={stageRef}
                     className="workspace-stage-canvas"
@@ -205,8 +281,9 @@ const Workspace = () => {
                     onMouseUp={onUpShape}
                     onTouchStart={onDownShape}
                     onTouchMove={onMoveShape}
-                    onTouchEnd={onUpShape}>
-                    <Layer>
+                    onTouchEnd={onUpShape}
+                    onContextMenu={onContextMenu}>
+                    <Layer ref={layerRef}>
                         <Rect
                             id="canvas-background"
                             listening={false}
@@ -219,7 +296,11 @@ const Workspace = () => {
 
                         <Rect ref={rectRef} name="rect" fill="rgba(0,0,255,0.5)" visible={false} />
                         {images.map((image: ImageState, index: number) => {
-                            return <URLImage key={index} image={image} />;
+                            return <URLImage key={index} image={image} transformerRef={transformerRef.current!} />;
+                        })}
+
+                        {texts.map((text: TextState, index: number) => {
+                            return <EditableText key={index} text={text} transformerRef={transformerRef.current!} />;
                         })}
 
                         <Transformer ref={transformerRef} />

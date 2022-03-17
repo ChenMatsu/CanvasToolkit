@@ -10,6 +10,7 @@ services:
         container_name: zd-2d-toolkit
         volumes:
             - ./src:/app/src
+            - /node_modules
         ports:
             - 3000:3000
         stdin_open: true

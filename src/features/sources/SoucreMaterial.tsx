@@ -1,17 +1,26 @@
 import { useAppSelector, useAppDispatch } from "../../app/hooks";
-import { onDrag } from "./sourceSlice";
+import { onDrag, onDragText } from "./sourceSlice";
+// import * as CONST from "../../consts";
 import "./SourceMaterial.scss";
 
-const SourceMaterial = (props: { card: { src: string } }) => {
+const SourceMaterial = ({ card }: { card: { src: string } }) => {
     const dispatch = useAppDispatch();
+    const { currentCategory } = useAppSelector((state) => state.layout);
 
-    const onDragMaterialStart = (e: any) => {
-        dispatch(onDrag(e.target.src));
+    const onDragMaterialStart = (e: React.DragEvent<HTMLImageElement>) => {
+        switch (currentCategory) {
+            // case CONST.default.SIDER_ITEMS.TEXTS:
+            //     dispatch(onDragText({ text: e.currentTarget.innerText }));
+            //     break;
+            default:
+                dispatch(onDrag(e.currentTarget.src));
+                break;
+        }
     };
 
     return (
         <div className="source-material-card">
-            <img draggable src={props.card.src} onDragStart={onDragMaterialStart} />
+            <img draggable src={card.src} onDragStart={onDragMaterialStart} />
         </div>
     );
 };

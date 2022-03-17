@@ -9,5 +9,12 @@
         height: 100%;
         object-fit: contain;
         border-radius: $base-border-radius;
+        cursor: pointer;
+        transition: 0.5s;
+
+        &:hover {
+            box-shadow: rgba(60, 64, 67, 0.3) 0px $base-depth-length $base-depth-length $base-depth-length,
+                rgba(60, 64, 67, 0.15) $base-depth-length $base-depth-length $base-depth-length / 2 1px;
+        }
     }
 }

@@ -7,8 +7,8 @@ import { useEffect } from "react";
 
 const Sider = () => {
     const dispatch = useAppDispatch();
-    const { siderItem } = useAppSelector((state) => state.layout);
     const { t } = useTranslation(["Layout"]);
+    const { currentCategory } = useAppSelector((state) => state.layout);
 
     const SIDER_ITEMS = [
         {
@@ -44,7 +44,7 @@ const Sider = () => {
     ];
 
     useEffect(() => {
-        dispatch(onSiderActive({ curItem: siderItem }));
+        dispatch(onSiderActive({ prevCategory: "", curCategory: currentCategory }));
     }, [dispatch]);
 
     return (
@@ -55,7 +55,7 @@ const Sider = () => {
                         className="sider-lists"
                         id={item.key}
                         key={item.key}
-                        onClick={() => dispatch(onSiderActive({ prevItem: siderItem, curItem: item.key }))}>
+                        onClick={() => dispatch(onSiderActive({ prevCategory: currentCategory, curCategory: item.key }))}>
                         {item.icon}
                         <h6>{item.text}</h6>
                     </li>

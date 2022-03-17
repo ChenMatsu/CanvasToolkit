@@ -29,3 +29,21 @@
         padding: $base-padding;
     }
 }
+
+#sources-text-boxes {
+    text-align: center;
+    h1,
+    h3,
+    p {
+        margin: $base-margin * 2;
+        padding: $base-padding * 2;
+        letter-spacing: $base-width;
+        cursor: pointer;
+        transition: 0.3s;
+        border-radius: $base-border-radius * 2;
+
+        &:hover {
+            background-color: $main-text-color;
+        }
+    }
+}

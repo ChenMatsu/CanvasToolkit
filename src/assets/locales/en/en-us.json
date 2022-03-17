@@ -1,0 +1,25 @@
+{
+    "Layout": {
+        "HeaderLeft_New": "Create",
+        "HeaderLeft_Open": "Open",
+        "HeaderLeft_Save": "Save",
+        "HeaderRight_Language": "Language",
+        "HeaderRight_Link": "FB",
+        "HeaderRight_Chat": "Contact",
+        "HeaderRight_About": "About",
+        "HeaderRight_Download": "Download",
+        "SiderMenu_Template": "Template",
+        "SiderMenu_Element": "Element",
+        "SiderMenu_Text": "Text",
+        "SiderMenu_Image": "Image",
+        "SiderMenu_Upload": "Upload",
+        "SiderMenu_Resize": "Resize"
+    },
+    "Sources": {
+        "UploadTitle": "Click to upload your own images",
+        "UploadButton": "Upload Image",
+        "Title": "Title",
+        "Subtitle": "Subtitle",
+        "Paragraph": "Paragraph"
+    }
+}
