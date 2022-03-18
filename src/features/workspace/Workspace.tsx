@@ -4,6 +4,7 @@ import { Stage as StageType } from "konva/lib/Stage";
 import { Rect as RectType } from "konva/lib/shapes/Rect";
 import { Layer as LayerType } from "konva/lib/Layer";
 import { Image as ImageType } from "konva/lib/shapes/Image";
+import { Text as TextType } from "konva/lib/shapes/Text";
 import { KonvaEventObject } from "konva/lib/Node";
 import { Transformer as TransformerType } from "konva/lib/shapes/Transformer";
 import Konva from "konva";
@@ -45,20 +46,75 @@ const URLImage = ({ image, transformerRef }: { image: { src: string; x: number; 
     );
 };
 
-const EditableText = ({ text, transformerRef }: { text: { content: string; x: number; y: number; size: number }; transformerRef: TransformerType }) => {
-    return <Text draggable name="text" x={text.x} y={text.y} text={text.content} fontSize={text.size} />;
+const EditableText = ({
+    text,
+    stageRef,
+    transformerRef,
+}: {
+    text: { content: string; x: number; y: number; size: number };
+    stageRef: StageType;
+    transformerRef: TransformerType;
+}) => {
+    const textRef = useRef<TextType>(null);
+
+    const onEditText = () => {
+        const textPosition = textRef.current!.getAbsolutePosition();
+        const stageBox = stageRef.container().getBoundingClientRect();
+
+        const editableAreaPosition = {
+            x: stageBox.left + textPosition?.x,
+            y: stageBox.top + textPosition?.y,
+        };
+
+        const textarea = document.createElement("textarea");
+        document.body.appendChild(textarea);
+
+        textRef.current?.visible(false);
+        textarea.value = textRef.current!.text();
+        textarea.style.position = "absolute";
+        textarea.style.top = editableAreaPosition.y + "px";
+        textarea.style.left = editableAreaPosition.x + "px";
+        textarea.style.background = "transparent";
+        textarea.style.resize = "none";
+        textarea.style.width = textRef.current!.width().toString();
+        textarea.style.fontSize = textRef.current!.height().toString();
+
+        textarea.focus();
+
+        textarea.addEventListener("keydown", (e: KeyboardEvent) => {
+            if (e.code === "Enter") {
+                textRef.current!.text(textarea.value);
+                // layer.draw();
+                document.body.removeChild(textarea);
+
+                textRef.current?.visible(true);
+            }
+        });
+
+        textarea.addEventListener("blur", (e: FocusEvent) => {
+            document.body.removeChild(textarea);
+
+            textRef.current?.visible(true);
+        });
+    };
+
+    return <Text draggable ref={textRef} name="text" x={text.x} y={text.y} text={text.content} fontSize={text.size} onClick={onEditText} />;
 };
 
 const Workspace = () => {
     const dispatch = useAppDispatch();
-    let workspace = document.getElementById("workspace-stage-container")!;
-    let menuNode = document.getElementById("shape-menu")!;
-    let deleteNode = document.getElementById("shape-menu-delete-button");
+    let workspaceTopbar = document.getElementById("workspace-topbar") as HTMLDivElement;
+    let workspaceContainer = document.getElementById("workspace-stage-container")! as HTMLDivElement;
+    // let workspaceStage = document.getElementsByClassName("workspace-stage-canvas")[0]! as HTMLDivElement;
+    // let workspaceStageContent = document.getElementsByClassName("konvajs-content")[0]! as HTMLDivElement;
+    let menuNode = document.getElementById("shape-menu")! as HTMLDivElement;
+    let deleteNode = document.getElementById("shape-menu-delete-button") as HTMLDivElement;
     let currentShape: any;
     const stageRef = useRef<StageType>(null);
     const layerRef = useRef<LayerType>(null);
     const rectRef = useRef<RectType>(null);
     const transformerRef = useRef<TransformerType>(null);
+    const { stage } = useAppSelector((state) => state.workspace);
     const { currentCategory } = useAppSelector((state) => state.layout);
     const { image, images, text, texts, transformer } = useAppSelector((state) => state.source);
 
@@ -89,8 +145,8 @@ const Workspace = () => {
     };
 
     const fitStageIntoParentContainer = useCallback(() => {
-        const workspaceWidth = workspace.offsetWidth;
-        const workspaceHeight = workspace.offsetHeight;
+        const workspaceWidth = workspaceContainer.offsetWidth;
+        const workspaceHeight = workspaceContainer.offsetHeight;
 
         stageRef.current?.width(workspaceWidth);
         stageRef.current?.height(workspaceHeight);
@@ -225,7 +281,7 @@ const Workspace = () => {
     const onDeleteShape = () => {
         deleteNode!.addEventListener("click", () => {
             // TODO: Fixing Delete Transformer
-            const tr = layerRef.current?.findOne("#Transformer");
+            // const tr = layerRef.current?.findOne("#Transformer");
             // tr?.visible(false);
             currentShape.destroy();
         });
@@ -248,16 +304,22 @@ const Workspace = () => {
     }, []);
 
     useEffect(() => {
-        workspace = document.getElementById("workspace-stage-container") as HTMLDivElement;
+        workspaceTopbar = document.getElementById("workspace-topbar") as HTMLDivElement;
+        workspaceContainer = document.getElementById("workspace-stage-container") as HTMLDivElement;
+        // workspaceStage = document.getElementsByClassName("workspace-stage-canvas")[0] as HTMLDivElement;
+        // workspaceStageContent = document.getElementsByClassName("konvajs-content")[0] as HTMLDivElement;
         menuNode = document.getElementById("shape-menu") as HTMLDivElement;
         deleteNode = document.getElementById("shape-menu-delete-button") as HTMLDivElement;
 
-        stageRef.current?.width(workspace.offsetWidth);
-        stageRef.current?.height(workspace.offsetHeight);
-
+        const ht = workspaceTopbar.offsetHeight + 4 + "px";
+        workspaceContainer.style.height = `calc(100% - ${ht})`;
+        // workspaceStage.style.height = `calc(100% - ${ht})`;
+        // workspaceStageContent.style.height = `calc(100% - ${ht})`;
+        stageRef.current?.width(workspaceContainer.offsetWidth);
+        stageRef.current?.height(workspaceContainer.offsetHeight);
         const background = stageRef.current?.findOne("#canvas-background");
-        background?.width(workspace.offsetWidth);
-        background?.height(workspace.offsetHeight);
+        background?.width(workspaceContainer.offsetWidth);
+        background?.height(workspaceContainer.offsetHeight);
 
         dispatch(onStoreStage(stageRef.current));
     }, []);
@@ -285,8 +347,8 @@ const Workspace = () => {
                     onTouchMove={onMoveShape}
                     onTouchEnd={onUpShape}
                     onContextMenu={onContextMenu}>
-                    <Layer ref={layerRef}>
-                        <Rect
+                    <Layer name="workspace-layer" ref={layerRef}>
+                        {/* <Rect
                             id="canvas-background"
                             listening={false}
                             x={0}
@@ -294,7 +356,7 @@ const Workspace = () => {
                             width={stageRef.current?.width()}
                             height={stageRef.current?.height()}
                             fill="#343f4b"
-                        />
+                        /> */}
 
                         <Rect ref={rectRef} name="rect" fill="rgba(0,0,255,0.5)" visible={false} />
                         {images.map((image: ImageState, index: number) => {
@@ -302,7 +364,7 @@ const Workspace = () => {
                         })}
 
                         {texts.map((text: TextState, index: number) => {
-                            return <EditableText key={index} text={text} transformerRef={transformerRef.current!} />;
+                            return <EditableText key={index} text={text} stageRef={stage} transformerRef={transformerRef.current!} />;
                         })}
 
                         <Transformer name="Transformer" ref={transformerRef} />

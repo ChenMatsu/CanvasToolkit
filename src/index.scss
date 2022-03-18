@@ -8,22 +8,35 @@
 @import "@fontsource/roboto/500.css";
 @import "@fontsource/roboto/700.css";
 
+@import "react-quill/dist/quill.snow.css";
 
 html,
 body {
-  margin: 0;
-  font-family: "Noto Serif TC", "Dongle", "Noto Sans JP", sans-serif;
+    margin: 0;
+    font-family: "Noto Serif TC", "Dongle", "Noto Sans JP", sans-serif;
 
-  &::-webkit-scrollbar {
-    display: none;
-  }
+    &::-webkit-scrollbar {
+        display: none;
+    }
 }
 
 #root {
-  width: 100vw;
-  min-height: 100vh;
-  height: auto;
-  display: block;
-  position: relative;
-  background: $main-visual-color;
+    width: 100vw;
+    min-height: 100vh;
+    height: auto;
+    display: block;
+    position: relative;
+}
+
+// Overwrite React-Quill SVG Styles
+.ql-snow .ql-stroke {
+    stroke: #fff;
+}
+
+.ql-snow .ql-picker {
+    color: #fff;
+}
+
+.ql-snow .ql-fill {
+    fill: #fff;
 }

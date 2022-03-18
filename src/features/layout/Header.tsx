@@ -3,10 +3,12 @@ import { useState } from "react";
 import { useAppSelector, useAppDispatch } from "../../app/hooks";
 import { useTranslation } from "react-i18next";
 import { AiOutlineSetting } from "react-icons/ai";
+import { HexColorPicker } from "react-colorful";
 import { Image as ImageType } from "konva/lib/shapes/Image";
 import { BiPlusCircle, BiDoorOpen, BiSave, BiWorld, BiLink, BiChat, BiInfoCircle, BiDownload } from "react-icons/bi";
 import "./Header.scss";
 import { onDownload } from "../sources/sourceSlice";
+import { onChangeTheme } from "../layout/layoutSlice";
 import { onSaveCanvas } from "../workspace/workspaceSlice";
 import Button from "@mui/material/Button";
 import ButtonGroup from "@mui/material/ButtonGroup";
@@ -32,9 +34,11 @@ const LanguageButtonsComponent = () => {
 const Header = () => {
     const dispatch = useAppDispatch();
     const { t } = useTranslation(["Layout"]);
+    const { themeBackgroundColor } = useAppSelector((state) => state.layout);
     const { stage } = useAppSelector((state) => state.workspace);
     const [popoverEl, setPopoverEl] = useState<HTMLElement | null>(null);
     const [savePopoverEl, setSavePopoverEl] = useState<HTMLElement | null>(null);
+    const [settingPopoverEl, setSettingPopoverEl] = useState<HTMLElement | null>(null);
 
     const onPopoverOpen = (event: React.MouseEvent<HTMLElement>) => {
         setPopoverEl(event.currentTarget);
@@ -45,7 +49,7 @@ const Header = () => {
     };
 
     return (
-        <div id="layout-header">
+        <div id="layout-header" style={{ background: themeBackgroundColor }}>
             <ul>
                 <li>
                     <BiPlusCircle className="header-icons" /> {t("HeaderLeft_New")}
@@ -145,8 +149,23 @@ const Header = () => {
                     }}>
                     <BiDownload className="header-icons" /> {t("HeaderRight_Download")}
                 </li>
-                <li>
+                <li onMouseEnter={(e) => setSettingPopoverEl(e.currentTarget)} onMouseLeave={() => setSettingPopoverEl(null)}>
                     <AiOutlineSetting className="header-icons" /> {t("HeaderRight_Setting")}
+                    <Popover
+                        id="mouse-over-popover"
+                        open={Boolean(settingPopoverEl)}
+                        anchorEl={settingPopoverEl}
+                        anchorOrigin={{
+                            vertical: "bottom",
+                            horizontal: "left",
+                        }}
+                        transformOrigin={{
+                            vertical: "top",
+                            horizontal: "left",
+                        }}
+                        onClose={() => setSettingPopoverEl(null)}>
+                        <HexColorPicker onChange={(color) => dispatch(onChangeTheme({ themeColor: color }))} />
+                    </Popover>
                 </li>
             </ul>
         </div>

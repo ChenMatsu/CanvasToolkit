@@ -8,7 +8,7 @@ import { useEffect } from "react";
 const Sider = () => {
     const dispatch = useAppDispatch();
     const { t } = useTranslation(["Layout"]);
-    const { currentCategory } = useAppSelector((state) => state.layout);
+    const { currentCategory, themeBackgroundColor } = useAppSelector((state) => state.layout);
 
     const SIDER_ITEMS = [
         {
@@ -48,7 +48,7 @@ const Sider = () => {
     }, [dispatch]);
 
     return (
-        <div id="layout-sider">
+        <div id="layout-sider" style={{ background: themeBackgroundColor }}>
             <ul>
                 {SIDER_ITEMS.map((item) => (
                     <li

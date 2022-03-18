@@ -1,11 +1,18 @@
+import { useAppSelector } from "../../app/hooks";
 import "./Content.scss";
 
 interface ChildProps {
-  children: React.ReactNode;
+    children: React.ReactNode;
 }
 
 const Content = (props: ChildProps) => {
-  return <div id="layout-content">{props.children}</div>;
+    const { themeBackgroundColor } = useAppSelector((state) => state.layout);
+
+    return (
+        <div id="layout-content" style={{ background: themeBackgroundColor }}>
+            {props.children}
+        </div>
+    );
 };
 
 export default Content;

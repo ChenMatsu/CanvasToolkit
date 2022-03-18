@@ -1,10 +1,11 @@
 import { useAppSelector, useAppDispatch } from "../../app/hooks";
 import { onDrag, onDragText } from "./sourceSlice";
-// import * as CONST from "../../consts";
+import * as CONST from "../../consts";
 import "./SourceMaterial.scss";
 
 const SourceMaterial = ({ card }: { card: { src: string } }) => {
     const dispatch = useAppDispatch();
+
     const { currentCategory } = useAppSelector((state) => state.layout);
 
     const onDragMaterialStart = (e: React.DragEvent<HTMLImageElement>) => {
@@ -20,7 +21,12 @@ const SourceMaterial = ({ card }: { card: { src: string } }) => {
 
     return (
         <div className="source-material-card">
-            <img draggable src={card.src} onDragStart={onDragMaterialStart} />
+            <img
+                style={{ objectFit: currentCategory === CONST.default.SIDER_ITEMS.ELEMENTS ? "contain" : "cover" }}
+                draggable
+                src={card.src}
+                onDragStart={onDragMaterialStart}
+            />
         </div>
     );
 };

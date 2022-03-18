@@ -22,7 +22,6 @@ export const workspaceSlice = createSlice({
 
             link.href = URL.createObjectURL(new Blob([action.payload.canvasJSON], { type: "application/json" }));
             link.download = Math.random().toFixed(3) + ".json";
-            console.log(link);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);

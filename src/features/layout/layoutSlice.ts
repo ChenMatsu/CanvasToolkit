@@ -2,10 +2,12 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface LayoutState {
     currentCategory: string;
+    themeBackgroundColor: string;
 }
 
 const initialState: LayoutState = {
     currentCategory: "elements",
+    themeBackgroundColor: "#3655b3",
 };
 
 export const layoutSlice = createSlice({
@@ -21,9 +23,12 @@ export const layoutSlice = createSlice({
 
             state.currentCategory = action.payload.curCategory;
         },
+        onChangeTheme: (state, action: PayloadAction<{ themeColor: string }>) => {
+            state.themeBackgroundColor = action.payload.themeColor;
+        },
     },
 });
 
-export const { onSiderActive } = layoutSlice.actions;
+export const { onSiderActive, onChangeTheme } = layoutSlice.actions;
 
 export default layoutSlice.reducer;

@@ -7,13 +7,12 @@
 
 #workspace-stage-container {
     margin: auto;
-    height: calc(100% - $base-height * 16);
     position: relative;
     background-color: $main-component-color;
 
     .workspace-stage-canvas {
         margin: auto;
-        background: $main-reverse-color;
+        background: $main-component-color;
         border: $base-line-width * 4 solid $main-component-color;
         border-bottom: none;
     }
