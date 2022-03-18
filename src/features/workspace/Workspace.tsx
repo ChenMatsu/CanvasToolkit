@@ -20,9 +20,14 @@ const URLImage = ({ image, transformerRef }: { image: { src: string; x: number; 
     const imageRef = useRef<ImageType>(null);
 
     useEffect(() => {
-        const imageNodes = transformerRef.nodes().concat([imageRef.current!]);
-        transformerRef.nodes(imageNodes);
-    }, []);
+        if (img) {
+            const imageNodes = transformerRef.nodes().concat([imageRef.current!]);
+            transformerRef.nodes(imageNodes);
+
+            // Matsu: Save Image Source to ImageRef in order to export as JSON Format Canvas Node
+            imageRef.current?.setAttr("source", img?.src);
+        }
+    }, [img]);
 
     return (
         <Image
@@ -41,7 +46,7 @@ const URLImage = ({ image, transformerRef }: { image: { src: string; x: number; 
 };
 
 const EditableText = ({ text, transformerRef }: { text: { content: string; x: number; y: number; size: number }; transformerRef: TransformerType }) => {
-    return <Text draggable x={text.x} y={text.y} text={text.content} fontSize={text.size} />;
+    return <Text draggable name="text" x={text.x} y={text.y} text={text.content} fontSize={text.size} />;
 };
 
 const Workspace = () => {
@@ -54,7 +59,6 @@ const Workspace = () => {
     const layerRef = useRef<LayerType>(null);
     const rectRef = useRef<RectType>(null);
     const transformerRef = useRef<TransformerType>(null);
-
     const { currentCategory } = useAppSelector((state) => state.layout);
     const { image, images, text, texts, transformer } = useAppSelector((state) => state.source);
 
@@ -213,7 +217,6 @@ const Workspace = () => {
         }
 
         currentShape = e.target;
-        // const containerRect = stageRef.current!.container().getBoundingClientRect();
         menuNode.style.display = "initial";
         menuNode.style.top = stageRef.current!.getPointerPosition()!.y - 60 + "px";
         menuNode.style.left = stageRef.current!.getPointerPosition()!.x + 10 + "px";
@@ -222,9 +225,8 @@ const Workspace = () => {
     const onDeleteShape = () => {
         deleteNode!.addEventListener("click", () => {
             // TODO: Fixing Delete Transformer
-            // const tr = layerRef.current?.find("Transformer").find((tr) => {});
-            // console.log(tr);
-            // tr.destroy();
+            const tr = layerRef.current?.findOne("#Transformer");
+            // tr?.visible(false);
             currentShape.destroy();
         });
 
@@ -243,7 +245,7 @@ const Workspace = () => {
         window.addEventListener("click", () => {
             menuNode.style.display = "none";
         });
-    }, [window.innerWidth]);
+    }, []);
 
     useEffect(() => {
         workspace = document.getElementById("workspace-stage-container") as HTMLDivElement;
@@ -303,7 +305,7 @@ const Workspace = () => {
                             return <EditableText key={index} text={text} transformerRef={transformerRef.current!} />;
                         })}
 
-                        <Transformer ref={transformerRef} />
+                        <Transformer name="Transformer" ref={transformerRef} />
                     </Layer>
                 </Stage>
             </div>
