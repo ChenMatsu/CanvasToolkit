@@ -1,6 +1,8 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState, AppThunk } from "../../app/store";
+import ReactQuill from "react-quill";
 import * as CONST from "../../consts";
+import React from "react";
 
 export interface ImageState {
     x: number;
@@ -9,6 +11,7 @@ export interface ImageState {
 }
 
 export interface TextState {
+    id: number;
     x: number;
     y: number;
     size: number;
@@ -16,6 +19,12 @@ export interface TextState {
 }
 
 interface SourcesState {
+    // quillRef: ReactQuill | null;
+    // currentTextareaRef: React.RefObject<HTMLTextAreaElement>;
+    quillRef: { current: any };
+    currentTextRef: any;
+    currentTextareaRef: any;
+    isEditing: boolean;
     isLoading: boolean;
     image: ImageState;
     images: ImageState[];
@@ -34,6 +43,10 @@ interface SourcesState {
 }
 
 const initialState: SourcesState = {
+    quillRef: { current: null },
+    currentTextareaRef: { current: null },
+    currentTextRef: { current: null },
+    isEditing: false,
     isLoading: false,
     image: {
         x: 0,
@@ -42,6 +55,7 @@ const initialState: SourcesState = {
     },
     images: [],
     text: {
+        id: 0,
         x: 0,
         y: 0,
         size: 0,
@@ -74,10 +88,38 @@ export const sourcesSlice = createSlice({
             state.text.content = action.payload.text;
             state.text.size = action.payload.size;
         },
-        onDrop: (state, action: PayloadAction<{ currentCategory: string; x: number; y: number; content?: string; src?: string; size?: number }>) => {
+        onStoreQuill: (state, action) => {
+            state.quillRef.current = action.payload;
+        },
+        onEditText: (state, action: PayloadAction<{ textIdx: number; isEditing: boolean; text?: string }>) => {
+            state.isEditing = action.payload.isEditing;
+            state.texts = state.texts.map((text) => {
+                if (text.id === action.payload.textIdx) {
+                    return {
+                        ...text,
+                        content: action.payload.text ? action.payload.text : "",
+                    };
+                }
+                return {
+                    ...text,
+                };
+            });
+
+            // if (action.payload.textRef) {
+            //     state.currentTextRef = action.payload.textRef;
+            // }
+        },
+        onCreateTextarea: (state, action: PayloadAction<{ textareaRef: any }>) => {
+            state.currentTextareaRef.current = action.payload.textareaRef;
+        },
+        onDrop: (
+            state,
+            action: PayloadAction<{ currentCategory: string; id: number; x: number; y: number; content?: string; src?: string; size?: number }>
+        ) => {
             switch (action.payload.currentCategory) {
                 case CONST.default.SIDER_ITEMS.TEXTS:
                     state.texts.push({
+                        id: Math.random(),
                         x: action.payload.x,
                         y: action.payload.y,
                         size: action.payload.size!,
@@ -98,7 +140,7 @@ export const sourcesSlice = createSlice({
                 src: action.payload,
             });
         },
-        onDownload: (state, action) => {
+        onDownload: (_, action) => {
             const link = document.createElement("a");
             link.download = Math.random().toString() + ".png";
             link.href = action.payload;
@@ -106,7 +148,7 @@ export const sourcesSlice = createSlice({
             link.click();
             document.body.removeChild(link);
         },
-        onClickTap: (state, action) => {
+        onClickTap: (_, action) => {
             // do we pressed shift or ctrl?
             // const metaPressed = e.evt.shiftKey || e.evt.ctrlKey || e.evt.metaKey;
             if (!action.payload.isSelected) {
@@ -153,15 +195,9 @@ export const sourcesSlice = createSlice({
             // action.payload.transformerRef.nodes(selected);
         },
         onContextMenuDelete: (state, action) => {},
-    },
-    extraReducers: (builder) => {
-        // builder
-        //     .addCase(onSwitchMaterialAsync.pending, (state) => {
-        //         state.isLoading = true;
-        //     })
-        //     .addCase(onSwitchMaterialAsync.fulfilled, (state, action) => {
-        //         state.isLoading = false;
-        //     });
+        onCreateQuill: (state, action) => {
+            // console.log(action.payload);
+        },
     },
 });
 
@@ -169,6 +205,9 @@ export const {
     onDrag,
     onDragText,
     onDrop,
+    onStoreQuill,
+    onCreateTextarea,
+    onEditText,
     onSwitchMaterials,
     onUploadImages,
     onDownload,
@@ -177,6 +216,7 @@ export const {
     onMouseMove,
     onMouseUp,
     onContextMenuDelete,
+    onCreateQuill,
 } = sourcesSlice.actions;
 
 export default sourcesSlice.reducer;

@@ -1,5 +1,6 @@
-import { DragEvent, useCallback, useEffect, useRef } from "react";
+import React, { useState, DragEvent, useCallback, useEffect, useRef } from "react";
 import { Stage, Layer, Group, Image, Rect, Text, Transformer } from "react-konva";
+import ReactQuill from "react-quill";
 import { Stage as StageType } from "konva/lib/Stage";
 import { Rect as RectType } from "konva/lib/shapes/Rect";
 import { Layer as LayerType } from "konva/lib/Layer";
@@ -10,11 +11,30 @@ import { Transformer as TransformerType } from "konva/lib/shapes/Transformer";
 import Konva from "konva";
 import useImage from "use-image";
 import { useAppSelector, useAppDispatch } from "../../app/hooks";
-import { onDrop, onClickTap, onMouseDown, onMouseMove, onMouseUp, ImageState, TextState } from "../sources/sourceSlice";
+import {
+    onDrop,
+    onCreateQuill,
+    onClickTap,
+    onCreateTextarea,
+    onEditText,
+    onMouseDown,
+    onMouseMove,
+    onMouseUp,
+    ImageState,
+    TextState,
+} from "../sources/sourceSlice";
 import { onStoreStage } from "./workspaceSlice";
 import TopBar from "./TopBar";
 import * as CONST from "../../consts";
 import "./Workspace.scss";
+import { AppDispatch } from "../../app/store";
+
+const toolbar = [
+    [{ size: ["extra-small", "small", "medium", "large"] }],
+    ["bold", "italic", "underline", "strike"],
+    [{ color: [] }, { background: [] }],
+    [{ indent: "-1" }, { indent: "+1" }],
+];
 
 const URLImage = ({ image, transformerRef }: { image: { src: string; x: number; y: number }; transformerRef: TransformerType }) => {
     const [img] = useImage(image.src, "anonymous");
@@ -46,59 +66,69 @@ const URLImage = ({ image, transformerRef }: { image: { src: string; x: number; 
     );
 };
 
-const EditableText = ({
+const EditableKonvaText = ({
+    textIdx,
     text,
     stageRef,
     transformerRef,
+    quillRef,
+    dispatch,
 }: {
-    text: { content: string; x: number; y: number; size: number };
+    textIdx: number;
+    dispatch: AppDispatch;
+    text: { id: number; content: string; x: number; y: number; size: number };
     stageRef: StageType;
+    quillRef: { current: ReactQuill };
     transformerRef: TransformerType;
 }) => {
     const textRef = useRef<TextType>(null);
 
-    const onEditText = () => {
+    const onEdit = () => {
+        dispatch(onEditText({ textIdx: textIdx, isEditing: true }));
+        textRef.current?.visible(false);
         const textPosition = textRef.current!.getAbsolutePosition();
         const stageBox = stageRef.container().getBoundingClientRect();
-
         const editableAreaPosition = {
             x: stageBox.left + textPosition?.x,
             y: stageBox.top + textPosition?.y,
         };
 
-        const textarea = document.createElement("textarea");
-        document.body.appendChild(textarea);
+        // const textarea = document.createElement("textarea");
 
-        textRef.current?.visible(false);
-        textarea.value = textRef.current!.text();
-        textarea.style.position = "absolute";
-        textarea.style.top = editableAreaPosition.y + "px";
-        textarea.style.left = editableAreaPosition.x + "px";
-        textarea.style.background = "transparent";
-        textarea.style.resize = "none";
-        textarea.style.width = textRef.current!.width().toString();
-        textarea.style.fontSize = textRef.current!.height().toString();
+        // document.body.appendChild(textarea);
+        // textarea.focus();
 
-        textarea.focus();
+        const quillEditor = quillRef.current.getEditor();
+        quillRef.current.hookEditor(quillEditor);
 
-        textarea.addEventListener("keydown", (e: KeyboardEvent) => {
+        quillEditor.root.style.fontSize = textRef.current!.textHeight.toString() + "px";
+        quillEditor.root.style.position = "absolute";
+        quillEditor.root.style.top = editableAreaPosition.y + "px";
+        quillEditor.root.style.left = editableAreaPosition.x + "px";
+        quillEditor.root.style.width = textRef.current!.width().toString();
+        quillEditor.root.style.height = (textRef.current!.height() * 1.5).toString() + "px";
+        quillEditor.root.style.resize = "none";
+        quillEditor.root.style.border = "1px solid #000";
+        quillEditor.root.style.zIndex = "100";
+        quillEditor.root.style.background = "transparent";
+        quillEditor.root.style.fontSize = textRef.current!.height().toString();
+        quillEditor.root.id = "quill-editor";
+
+        document.body.appendChild(quillEditor.root);
+
+        quillEditor.setText(textRef.current!.text());
+        quillEditor.root.addEventListener("keydown", (e: KeyboardEvent) => {
             if (e.code === "Enter") {
-                textRef.current!.text(textarea.value);
-                // layer.draw();
-                document.body.removeChild(textarea);
+                dispatch(onEditText({ textIdx: text.id, isEditing: false, text: quillEditor.getText() }));
+                quillRef.current.unhookEditor(quillEditor);
+                document.getElementById("quill-editor")?.remove();
 
-                textRef.current?.visible(true);
+                textRef.current!.visible(true);
             }
-        });
-
-        textarea.addEventListener("blur", (e: FocusEvent) => {
-            document.body.removeChild(textarea);
-
-            textRef.current?.visible(true);
         });
     };
 
-    return <Text draggable ref={textRef} name="text" x={text.x} y={text.y} text={text.content} fontSize={text.size} onClick={onEditText} />;
+    return <Text draggable ref={textRef} name="text" x={text.x} y={text.y} text={text.content} fontSize={text.size} onClick={onEdit} />;
 };
 
 const Workspace = () => {
@@ -116,8 +146,9 @@ const Workspace = () => {
     const transformerRef = useRef<TransformerType>(null);
     const { stage } = useAppSelector((state) => state.workspace);
     const { currentCategory } = useAppSelector((state) => state.layout);
-    const { image, images, text, texts, transformer } = useAppSelector((state) => state.source);
+    const { image, images, text, texts, quillRef, transformer, currentTextareaRef } = useAppSelector((state) => state.source);
 
+    console.log(texts);
     const onDropMaterial = (event: DragEvent) => {
         event.preventDefault();
         stageRef.current?.setPointersPositions(event);
@@ -135,6 +166,7 @@ const Workspace = () => {
             default:
                 dispatch(
                     onDrop({
+                        id: 0,
                         ...image,
                         ...stageRef.current?.getPointerPosition(),
                         currentCategory,
@@ -283,6 +315,7 @@ const Workspace = () => {
             // TODO: Fixing Delete Transformer
             // const tr = layerRef.current?.findOne("#Transformer");
             // tr?.visible(false);
+            console.log(currentShape);
             currentShape.destroy();
         });
 
@@ -306,15 +339,18 @@ const Workspace = () => {
     useEffect(() => {
         workspaceTopbar = document.getElementById("workspace-topbar") as HTMLDivElement;
         workspaceContainer = document.getElementById("workspace-stage-container") as HTMLDivElement;
-        // workspaceStage = document.getElementsByClassName("workspace-stage-canvas")[0] as HTMLDivElement;
-        // workspaceStageContent = document.getElementsByClassName("konvajs-content")[0] as HTMLDivElement;
         menuNode = document.getElementById("shape-menu") as HTMLDivElement;
         deleteNode = document.getElementById("shape-menu-delete-button") as HTMLDivElement;
 
-        const ht = workspaceTopbar.offsetHeight + 4 + "px";
-        workspaceContainer.style.height = `calc(100% - ${ht})`;
+        // workspaceStage = document.getElementsByClassName("workspace-stage-canvas")[0] as HTMLDivElement;
+        // workspaceStageContent = document.getElementsByClassName("konvajs-content")[0] as HTMLDivElement;
+
+        const topbarHeight = workspaceTopbar.offsetHeight + 4 + "px";
+        workspaceContainer.style.height = `calc(100% - ${topbarHeight})`;
+
         // workspaceStage.style.height = `calc(100% - ${ht})`;
         // workspaceStageContent.style.height = `calc(100% - ${ht})`;
+
         stageRef.current?.width(workspaceContainer.offsetWidth);
         stageRef.current?.height(workspaceContainer.offsetHeight);
         const background = stageRef.current?.findOne("#canvas-background");
@@ -364,7 +400,17 @@ const Workspace = () => {
                         })}
 
                         {texts.map((text: TextState, index: number) => {
-                            return <EditableText key={index} text={text} stageRef={stage} transformerRef={transformerRef.current!} />;
+                            return (
+                                <EditableKonvaText
+                                    textIdx={index}
+                                    key={index}
+                                    text={text}
+                                    dispatch={dispatch}
+                                    stageRef={stage}
+                                    quillRef={quillRef}
+                                    transformerRef={transformerRef.current!}
+                                />
+                            );
                         })}
 
                         <Transformer name="Transformer" ref={transformerRef} />

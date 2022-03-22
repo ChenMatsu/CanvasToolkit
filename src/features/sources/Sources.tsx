@@ -93,36 +93,6 @@ const TEMPLATES = [
     },
 ];
 
-const TEXTS = [
-    {
-        src: "https://api.polotno.dev/text-templates/2021-06-01-text-plain-adventure-fun-cursive.png",
-    },
-    {
-        src: "https://api.polotno.dev/text-templates/2021-06-01-text-plain-celebration-birthday-cursive-handwritting.png",
-    },
-    {
-        src: "https://api.polotno.dev/text-templates/2021-06-01-text-plain-corporate-business-clean-simple-modern.png",
-    },
-    {
-        src: "https://api.polotno.dev/text-templates/2021-06-01-text-plain-modern-minamalistic-simple.png",
-    },
-    {
-        src: "https://api.polotno.dev/text-templates/2021-06-01-text-plain-fashion-sale-brand-clothes.png",
-    },
-    {
-        src: "https://api.polotno.dev/text-templates/2021-06-01-text-plain-quote-quotation-motivation-inspiring.png",
-    },
-    {
-        src: "https://api.polotno.dev/text-templates/2021-06-01-text-plain-sale-fashion-brand.png",
-    },
-    {
-        src: "https://api.polotno.dev/text-templates/2021-06-01-text-plain-quote-contemporary.png",
-    },
-    {
-        src: "https://api.polotno.dev/text-templates/2021-06-02-text-color-beautiful-decorative-love-elgant-cursive-emotion-famenine.png",
-    },
-];
-
 const PHOTOS = [
     {
         src: "https://images.unsplash.com/photo-1541963463532-d68292c34b19?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=1080&fit=max",
@@ -152,7 +122,6 @@ const PHOTOS = [
 
 const elements: any = [...ELEMENTS];
 const templates: any = [...TEMPLATES];
-const texts: any = [...TEXTS];
 const photos: any = [...PHOTOS];
 const resizes: any = [...TEMPLATES];
 
@@ -171,7 +140,7 @@ const Sources = () => {
                 dispatch(onSwitchMaterials({ categoryItems: templates }));
                 break;
             case CONST.default.SIDER_ITEMS.TEXTS:
-                dispatch(onSwitchMaterials({ categoryItems: texts }));
+                dispatch(onSwitchMaterials({ categoryItems: [] }));
                 break;
             case CONST.default.SIDER_ITEMS.PHOTOS:
                 dispatch(onSwitchMaterials({ categoryItems: photos }));

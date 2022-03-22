@@ -5,7 +5,6 @@ import "./SourceMaterial.scss";
 
 const SourceMaterial = ({ card }: { card: { src: string } }) => {
     const dispatch = useAppDispatch();
-
     const { currentCategory } = useAppSelector((state) => state.layout);
 
     const onDragMaterialStart = (e: React.DragEvent<HTMLImageElement>) => {
