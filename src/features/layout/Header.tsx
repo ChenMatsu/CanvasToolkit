@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useAppSelector, useAppDispatch } from "../../app/hooks";
 import { useTranslation } from "react-i18next";
 import { AiOutlineSetting } from "react-icons/ai";
-import { HexColorPicker } from "react-colorful";
+import { SketchPicker } from "react-color";
 import { Image as ImageType } from "konva/lib/shapes/Image";
 import { BiPlusCircle, BiDoorOpen, BiSave, BiWorld, BiLink, BiChat, BiInfoCircle, BiDownload } from "react-icons/bi";
 import "./Header.scss";
@@ -145,7 +145,8 @@ const Header = () => {
                 </li>
                 <li
                     onClick={() => {
-                        dispatch(onDownload(stage.toDataURL()));
+                        const stageLayer = stage.find(".workspace-layer")[0];
+                        dispatch(onDownload(stageLayer.toDataURL()));
                     }}>
                     <BiDownload className="header-icons" /> {t("HeaderRight_Download")}
                 </li>
@@ -164,7 +165,7 @@ const Header = () => {
                             horizontal: "left",
                         }}
                         onClose={() => setSettingPopoverEl(null)}>
-                        <HexColorPicker onChange={(color) => dispatch(onChangeTheme({ themeColor: color }))} />
+                        <SketchPicker onChange={(color) => dispatch(onChangeTheme({ themeColor: color.hex }))} />
                     </Popover>
                 </li>
             </ul>

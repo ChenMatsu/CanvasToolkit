@@ -1,6 +1,9 @@
-import React, { useState, DragEvent, useCallback, useEffect, useRef } from "react";
-import { Stage, Layer, Group, Image, Rect, Text, Transformer } from "react-konva";
+import React, { DragEvent, useCallback, useEffect, useRef } from "react";
+import { Stage, Layer, Image, Rect, Text, Transformer } from "react-konva";
 import ReactQuill from "react-quill";
+import { useAppSelector, useAppDispatch } from "../../app/hooks";
+import { AppDispatch } from "../../app/store";
+import { onDrop, onClickTap, onEditText, onMouseDown, onMouseMove, onMouseUp, ImageState, TextState, onIsUpdateShape } from "../sources/sourceSlice";
 import { Stage as StageType } from "konva/lib/Stage";
 import { Rect as RectType } from "konva/lib/shapes/Rect";
 import { Layer as LayerType } from "konva/lib/Layer";
@@ -10,33 +13,26 @@ import { KonvaEventObject } from "konva/lib/Node";
 import { Transformer as TransformerType } from "konva/lib/shapes/Transformer";
 import Konva from "konva";
 import useImage from "use-image";
-import { useAppSelector, useAppDispatch } from "../../app/hooks";
-import {
-    onDrop,
-    onCreateQuill,
-    onClickTap,
-    onCreateTextarea,
-    onEditText,
-    onMouseDown,
-    onMouseMove,
-    onMouseUp,
-    ImageState,
-    TextState,
-} from "../sources/sourceSlice";
 import { onStoreStage } from "./workspaceSlice";
 import TopBar from "./TopBar";
 import * as CONST from "../../consts";
 import "./Workspace.scss";
-import { AppDispatch } from "../../app/store";
 
-const toolbar = [
-    [{ size: ["extra-small", "small", "medium", "large"] }],
-    ["bold", "italic", "underline", "strike"],
-    [{ color: [] }, { background: [] }],
-    [{ indent: "-1" }, { indent: "+1" }],
-];
-
-const URLImage = ({ image, transformerRef }: { image: { src: string; x: number; y: number }; transformerRef: TransformerType }) => {
+const URLImage = ({
+    image,
+    transformerRef,
+    imageColor,
+    dispatch,
+}: {
+    image: { src: string; x: number; y: number };
+    imageColor: {
+        red: number;
+        green: number;
+        blue: number;
+    };
+    transformerRef: TransformerType;
+    dispatch: AppDispatch;
+}) => {
     const [img] = useImage(image.src, "anonymous");
     const imageRef = useRef<ImageType>(null);
 
@@ -47,8 +43,20 @@ const URLImage = ({ image, transformerRef }: { image: { src: string; x: number; 
 
             // Matsu: Save Image Source to ImageRef in order to export as JSON Format Canvas Node
             imageRef.current?.setAttr("source", img?.src);
+            imageRef.current?.setAttr("red", imageRef.current.red);
+            imageRef.current?.setAttr("green", imageRef.current.green);
+            imageRef.current?.setAttr("blue", imageRef.current.blue);
         }
     }, [img]);
+
+    const onStartUpdateShape = () => {
+        dispatch(
+            onIsUpdateShape({
+                isUpdating: true,
+                imageRef: imageRef,
+            })
+        );
+    };
 
     return (
         <Image
@@ -58,10 +66,12 @@ const URLImage = ({ image, transformerRef }: { image: { src: string; x: number; 
             image={img}
             x={image.x}
             y={image.y}
+            filters={[Konva.Filters.RGB]}
             offsetX={img ? img.width / 2 : 0}
             offsetY={img ? img.height / 2 : 0}
             onDragMove={(e) => e.evt.preventDefault()}
             onDragEnd={(e) => e.evt.preventDefault()}
+            onClick={onStartUpdateShape}
         />
     );
 };
@@ -70,85 +80,130 @@ const EditableKonvaText = ({
     textIdx,
     text,
     stageRef,
+    themeBackgroundColor,
     transformerRef,
     quillRef,
     dispatch,
 }: {
-    textIdx: number;
     dispatch: AppDispatch;
     text: { id: number; content: string; x: number; y: number; size: number };
+    textIdx: number;
+    themeBackgroundColor: string;
     stageRef: StageType;
     quillRef: { current: ReactQuill };
     transformerRef: TransformerType;
 }) => {
-    const textRef = useRef<TextType>(null);
+    const konvaTextRef = useRef<TextType>(null);
 
     const onEdit = () => {
-        dispatch(onEditText({ textIdx: textIdx, isEditing: true }));
-        textRef.current?.visible(false);
-        const textPosition = textRef.current!.getAbsolutePosition();
+        dispatch(onEditText({ isEditing: true, textIdx: textIdx }));
+        // Hide Konva Text
+        konvaTextRef.current?.visible(false);
+        // Get Konva Text Position and Stage Container Position
+        const textPosition = konvaTextRef.current!.getAbsolutePosition();
         const stageBox = stageRef.container().getBoundingClientRect();
         const editableAreaPosition = {
             x: stageBox.left + textPosition?.x,
             y: stageBox.top + textPosition?.y,
         };
 
-        // const textarea = document.createElement("textarea");
-
-        // document.body.appendChild(textarea);
-        // textarea.focus();
-
+        // Connect ReactQuill Editor
         const quillEditor = quillRef.current.getEditor();
         quillRef.current.hookEditor(quillEditor);
 
-        quillEditor.root.style.fontSize = textRef.current!.textHeight.toString() + "px";
-        quillEditor.root.style.position = "absolute";
-        quillEditor.root.style.top = editableAreaPosition.y + "px";
-        quillEditor.root.style.left = editableAreaPosition.x + "px";
-        quillEditor.root.style.width = textRef.current!.width().toString();
-        quillEditor.root.style.height = (textRef.current!.height() * 1.5).toString() + "px";
-        quillEditor.root.style.resize = "none";
-        quillEditor.root.style.border = "1px solid #000";
-        quillEditor.root.style.zIndex = "100";
-        quillEditor.root.style.background = "transparent";
-        quillEditor.root.style.fontSize = textRef.current!.height().toString();
-        quillEditor.root.id = "quill-editor";
+        // unpriviledgedEditor.
 
+        // Place Editor Area based on Konva Text
+        quillEditor.root.id = "quill-editor";
+        quillEditor.root.style.position = "absolute";
+        quillEditor.root.style.top = `${editableAreaPosition.y}px`;
+        quillEditor.root.style.left = `${editableAreaPosition.x}px`;
+        quillEditor.root.style.width = `${(konvaTextRef.current!.width() * 2).toString()}px`;
+        quillEditor.root.style.height = `${(konvaTextRef.current!.height() * 2).toString()}px`;
+        quillEditor.root.style.maxWidth = "500px";
+        quillEditor.root.style.minHeight = "100px";
+        quillEditor.root.style.maxHeight = "500px";
+        quillEditor.root.style.fontSize = konvaTextRef.current!.height().toString();
+        quillEditor.root.style.fontStyle = konvaTextRef.current!.getAttr("fontStyle");
+        quillEditor.root.style.resize = "none";
+        quillEditor.root.style.zIndex = "100";
+        quillEditor.root.style.border = `3px double ${themeBackgroundColor}`;
+        quillEditor.root.style.background = "transparent";
         document.body.appendChild(quillEditor.root);
 
-        quillEditor.setText(textRef.current!.text());
+        quillEditor.root.focus();
+
+        quillEditor.setText(konvaTextRef.current!.text());
         quillEditor.root.addEventListener("keydown", (e: KeyboardEvent) => {
             if (e.code === "Enter") {
                 dispatch(onEditText({ textIdx: text.id, isEditing: false, text: quillEditor.getText() }));
-                quillRef.current.unhookEditor(quillEditor);
-                document.getElementById("quill-editor")?.remove();
 
-                textRef.current!.visible(true);
+                const editedStyles = quillEditor.getFormat();
+
+                konvaTextRef.current!.visible(true);
+                // konvaTextRef.current!.fill(editedStyles.color ? editedStyles.color : "#000");
+                konvaTextRef.current?.setAttr("fill", editedStyles.color ? editedStyles.color : "#000");
+
+                if (editedStyles.bold && editedStyles.italic) {
+                    konvaTextRef.current!.fontStyle("italic bold");
+                } else if (editedStyles.bold) {
+                    konvaTextRef.current!.fontStyle("bold");
+                } else if (editedStyles.italic) {
+                    konvaTextRef.current!.fontStyle("italic");
+                } else {
+                    konvaTextRef.current!.fontStyle("normal");
+                }
+
+                // Disconnect ReactQuill Editor and Remove from DOM
+                // quillRef.current.unhookEditor(quillEditor);
+                document.getElementById("quill-editor")?.remove();
             }
         });
+
+        // quillEditor.root.addEventListener("blur", (e: FocusEvent) => {
+        //     dispatch(onEditText({ textIdx: text.id, isEditing: false, text: quillEditor.getText() }));
+
+        //     const editedStyles = quillEditor.getFormat();
+
+        //     konvaTextRef.current!.visible(true);
+        //     konvaTextRef.current!.fill(editedStyles.color ? editedStyles.color : "#000");
+
+        //     if (editedStyles.bold && editedStyles.italic) {
+        //         konvaTextRef.current!.fontStyle("italic bold");
+        //     } else if (editedStyles.bold) {
+        //         konvaTextRef.current!.fontStyle("bold");
+        //     } else if (editedStyles.italic) {
+        //         konvaTextRef.current!.fontStyle("italic");
+        //     } else {
+        //         konvaTextRef.current!.fontStyle("normal");
+        //     }
+
+        //     // Disconnect ReactQuill Editor and Remove from DOM
+        //     quillRef.current.unhookEditor(quillEditor);
+        //     document.getElementById("quill-editor")?.remove();
+        // });
     };
 
-    return <Text draggable ref={textRef} name="text" x={text.x} y={text.y} text={text.content} fontSize={text.size} onClick={onEdit} />;
+    return <Text draggable ref={konvaTextRef} name="text" x={text.x} y={text.y} text={text.content} fontSize={text.size} onDblClick={onEdit} />;
 };
 
 const Workspace = () => {
     const dispatch = useAppDispatch();
+
     let workspaceTopbar = document.getElementById("workspace-topbar") as HTMLDivElement;
     let workspaceContainer = document.getElementById("workspace-stage-container")! as HTMLDivElement;
-    // let workspaceStage = document.getElementsByClassName("workspace-stage-canvas")[0]! as HTMLDivElement;
-    // let workspaceStageContent = document.getElementsByClassName("konvajs-content")[0]! as HTMLDivElement;
     let menuNode = document.getElementById("shape-menu")! as HTMLDivElement;
-    let deleteNode = document.getElementById("shape-menu-delete-button") as HTMLDivElement;
-    let currentShape: any;
+    let deleteButtonNode = document.getElementById("shape-menu-delete-button") as HTMLDivElement;
+    let currentShape: ImageType | TextType;
+
     const stageRef = useRef<StageType>(null);
     const layerRef = useRef<LayerType>(null);
     const rectRef = useRef<RectType>(null);
     const transformerRef = useRef<TransformerType>(null);
     const { stage } = useAppSelector((state) => state.workspace);
-    const { currentCategory } = useAppSelector((state) => state.layout);
-    const { image, images, text, texts, quillRef, transformer, currentTextareaRef } = useAppSelector((state) => state.source);
+    const { currentCategory, themeBackgroundColor } = useAppSelector((state) => state.layout);
+    const { image, images, text, texts, quillRef, imageColor } = useAppSelector((state) => state.source);
 
-    console.log(texts);
     const onDropMaterial = (event: DragEvent) => {
         event.preventDefault();
         stageRef.current?.setPointersPositions(event);
@@ -185,12 +240,16 @@ const Workspace = () => {
     }, []);
 
     const onClickTapShape = (event: KonvaEventObject<MouseEvent>) => {
-        if (rectRef.current?.visible()) {
+        if (event.target === stageRef.current) {
+            // Hide shape color picker
+            dispatch(onIsUpdateShape({ isUpdating: false }));
+
+            // Clear transformer nodes
+            transformerRef.current?.nodes([]);
             return;
         }
 
-        if (event.target === stageRef.current) {
-            transformerRef.current?.nodes([]);
+        if (rectRef.current?.visible()) {
             return;
         }
 
@@ -215,16 +274,6 @@ const Workspace = () => {
             const nodes = transformerRef.current?.nodes().concat([event.target])!;
             transformerRef.current?.nodes(nodes);
         }
-
-        // dispatch(
-        //     onClickTap({
-        //         event: event,
-        //         stage: stageRef.current,
-        //         selectionRect: rectRef.current,
-        //         transformer: transformerRef.current,
-        //         isSelected: isSelected,
-        //     })
-        // );
     };
     var x1: number, y1: number, x2: number, y2: number;
 
@@ -232,9 +281,8 @@ const Workspace = () => {
         if (e.target !== stageRef.current) {
             return;
         }
-        e.evt.preventDefault();
 
-        // dispatch(onMouseDown({ stage: stageRef.cu    rrent }));
+        e.evt.preventDefault();
 
         x1 = stageRef.current?.getPointerPosition()!.x;
         y1 = stageRef.current?.getPointerPosition()!.y;
@@ -260,17 +308,7 @@ const Workspace = () => {
             y: Math.min(y1, y2),
             width: Math.abs(x2 - x1),
             height: Math.abs(y2 - y1),
-            // x: Math.min(transformer.selection.x1, transformer.selection.x2),
-            // y: Math.min(transformer.selection.y1, transformer.selection.y2),
-            // width: Math.abs(transformer.selection.x2 - transformer.selection.x1),
-            // height: Math.abs(transformer.selection.y2 - transformer.selection.y1),
         });
-
-        // dispatch(
-        //     onMouseMove({
-        //         stage: stageRef.current,
-        //     })
-        // );
     };
 
     const onUpShape = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
@@ -288,13 +326,6 @@ const Workspace = () => {
         let box = rectRef.current?.getClientRect();
         let selected = shapes.filter((shape: Konva.Node) => Konva.Util.haveIntersection(box, shape.getClientRect()));
         transformerRef.current?.nodes(selected);
-        // dispatch(
-        //     onMouseUp({
-        //         stage: stageRef.current,
-        //         selectionRect: rectRef.current,
-        //         transformerRef: transformerRef.current,
-        //     })
-        // );
     };
 
     const onContextMenu = (e: KonvaEventObject<PointerEvent>) => {
@@ -304,22 +335,25 @@ const Workspace = () => {
             return;
         }
 
-        currentShape = e.target;
+        currentShape = e.target as ImageType | TextType;
+
         menuNode.style.display = "initial";
         menuNode.style.top = stageRef.current!.getPointerPosition()!.y - 60 + "px";
         menuNode.style.left = stageRef.current!.getPointerPosition()!.x + 10 + "px";
     };
 
-    const onDeleteShape = () => {
-        deleteNode!.addEventListener("click", () => {
+    const onDeleteShape = (curShape: ImageType | TextType) => {
+        deleteButtonNode!.addEventListener("click", () => {
             // TODO: Fixing Delete Transformer
             // const tr = layerRef.current?.findOne("#Transformer");
             // tr?.visible(false);
-            console.log(currentShape);
-            currentShape.destroy();
+            if (!curShape) {
+                return;
+            }
+            curShape.destroy();
         });
 
-        deleteNode?.click();
+        deleteButtonNode?.click();
     };
 
     useEffect(() => {
@@ -340,16 +374,10 @@ const Workspace = () => {
         workspaceTopbar = document.getElementById("workspace-topbar") as HTMLDivElement;
         workspaceContainer = document.getElementById("workspace-stage-container") as HTMLDivElement;
         menuNode = document.getElementById("shape-menu") as HTMLDivElement;
-        deleteNode = document.getElementById("shape-menu-delete-button") as HTMLDivElement;
-
-        // workspaceStage = document.getElementsByClassName("workspace-stage-canvas")[0] as HTMLDivElement;
-        // workspaceStageContent = document.getElementsByClassName("konvajs-content")[0] as HTMLDivElement;
+        deleteButtonNode = document.getElementById("shape-menu-delete-button") as HTMLDivElement;
 
         const topbarHeight = workspaceTopbar.offsetHeight + 4 + "px";
         workspaceContainer.style.height = `calc(100% - ${topbarHeight})`;
-
-        // workspaceStage.style.height = `calc(100% - ${ht})`;
-        // workspaceStageContent.style.height = `calc(100% - ${ht})`;
 
         stageRef.current?.width(workspaceContainer.offsetWidth);
         stageRef.current?.height(workspaceContainer.offsetHeight);
@@ -366,7 +394,7 @@ const Workspace = () => {
             <div id="workspace-stage-container" onDrop={onDropMaterial} onDragOver={(e) => e.preventDefault()}>
                 <div id="shape-menu">
                     <div>
-                        <button id="shape-menu-delete-button" onClick={onDeleteShape}>
+                        <button id="shape-menu-delete-button" onClick={() => onDeleteShape(currentShape)}>
                             <span>Delete</span>
                         </button>
                     </div>
@@ -395,20 +423,22 @@ const Workspace = () => {
                         /> */}
 
                         <Rect ref={rectRef} name="rect" fill="rgba(0,0,255,0.5)" visible={false} />
+
                         {images.map((image: ImageState, index: number) => {
-                            return <URLImage key={index} image={image} transformerRef={transformerRef.current!} />;
+                            return <URLImage key={index} image={image} transformerRef={transformerRef.current!} dispatch={dispatch} imageColor={imageColor} />;
                         })}
 
                         {texts.map((text: TextState, index: number) => {
                             return (
                                 <EditableKonvaText
-                                    textIdx={index}
                                     key={index}
                                     text={text}
-                                    dispatch={dispatch}
+                                    textIdx={index}
                                     stageRef={stage}
                                     quillRef={quillRef}
                                     transformerRef={transformerRef.current!}
+                                    themeBackgroundColor={themeBackgroundColor}
+                                    dispatch={dispatch}
                                 />
                             );
                         })}

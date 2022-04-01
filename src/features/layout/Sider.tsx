@@ -36,11 +36,11 @@ const Sider = () => {
             icon: <BiCloudUpload className="sider-icons" />,
             text: `${t("SiderMenu_Upload")}`,
         },
-        {
-            key: "resizes",
-            icon: <BiFullscreen className="sider-icons" />,
-            text: `${t("SiderMenu_Resize")}`,
-        },
+        // {
+        //     key: "resizes",
+        //     icon: <BiFullscreen className="sider-icons" />,
+        //     text: `${t("SiderMenu_Resize")}`,
+        // },
     ];
 
     useEffect(() => {
@@ -48,7 +48,7 @@ const Sider = () => {
     }, [dispatch]);
 
     return (
-        <div id="layout-sider" style={{ background: themeBackgroundColor }}>
+        <div id="layout-sider" style={{ background: themeBackgroundColor, minWidth: 60 }}>
             <ul>
                 {SIDER_ITEMS.map((item) => (
                     <li

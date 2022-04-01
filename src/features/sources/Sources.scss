@@ -4,6 +4,7 @@
     @extend %border-right-common;
 
     width: 25%;
+    min-width: 350px;
     overflow-y: scroll;
 }
 

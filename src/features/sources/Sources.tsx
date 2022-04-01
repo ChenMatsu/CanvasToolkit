@@ -98,9 +98,6 @@ const PHOTOS = [
         src: "https://images.unsplash.com/photo-1541963463532-d68292c34b19?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=1080&fit=max",
     },
     {
-        src: "https://www.gettyimages.hk/gi-resources/images/500px/983794168.jpg",
-    },
-    {
         src: "https://cdn.pixabay.com/photo/2021/08/25/20/42/field-6574455__340.jpg",
     },
     {
@@ -117,6 +114,30 @@ const PHOTOS = [
     },
     {
         src: "https://media.istockphoto.com/photos/hot-air-balloons-flying-over-the-botan-canyon-in-turkey-picture-id1297349747?b=1&k=20&m=1297349747&s=170667a&w=0&h=oH31fJty_4xWl_JQ4OIQWZKP8C6ji9Mz7L4XmEnbqRU=",
+    },
+    {
+        src: "https://images.pexels.com/photos/2662116/pexels-photo-2662116.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260",
+    },
+    {
+        src: "https://images.pexels.com/photos/572897/pexels-photo-572897.jpeg?auto=compress&cs=tinysrgb&dpr=2&w=500",
+    },
+    {
+        src: "https://images.pexels.com/photos/624015/pexels-photo-624015.jpeg?auto=compress&cs=tinysrgb&dpr=2&w=500",
+    },
+    {
+        src: "https://images.pexels.com/photos/5137664/pexels-photo-5137664.jpeg?auto=compress&cs=tinysrgb&dpr=2&w=500",
+    },
+    {
+        src: "https://images.pexels.com/photos/839462/pexels-photo-839462.jpeg?auto=compress&cs=tinysrgb&dpr=2&w=500",
+    },
+    {
+        src: "https://images.pexels.com/photos/6004828/pexels-photo-6004828.jpeg?auto=compress&cs=tinysrgb&dpr=2&w=500",
+    },
+    {
+        src: "https://images.pexels.com/photos/414171/pexels-photo-414171.jpeg?auto=compress&cs=tinysrgb&dpr=2&w=500",
+    },
+    {
+        src: "https://images.pexels.com/photos/814499/pexels-photo-814499.jpeg?auto=compress&cs=tinysrgb&dpr=2&w=500",
     },
 ];
 

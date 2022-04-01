@@ -1,5 +1,4 @@
-import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { RootState, AppThunk } from "../../app/store";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Stage as StageType } from "konva/lib/Stage";
 
 interface Workspace {

@@ -12,7 +12,7 @@ services:
             - ./src:/app/src
             - /node_modules
         ports:
-            - 3000:3000
+            - 3003:3000
         stdin_open: true
         tty: true
         restart: always

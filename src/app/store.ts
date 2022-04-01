@@ -1,16 +1,18 @@
-import { configureStore, ThunkAction, Action } from "@reduxjs/toolkit";
+import { configureStore, combineReducers, ThunkAction, Action } from "@reduxjs/toolkit";
 import counterReducer from "../features/counter/counterSlice";
 import layoutReducer from "../features/layout/layoutSlice";
 import workspaceReducer from "../features/workspace/workspaceSlice";
 import sourceReducer from "../features/sources/sourceSlice";
 
+const reducers = combineReducers({
+    counter: counterReducer,
+    workspace: workspaceReducer,
+    source: sourceReducer,
+    layout: layoutReducer,
+});
+
 export const store = configureStore({
-    reducer: {
-        counter: counterReducer,
-        workspace: workspaceReducer,
-        source: sourceReducer,
-        layout: layoutReducer,
-    },
+    reducer: reducers,
     middleware: (getDefaultMiddleware) => getDefaultMiddleware({ serializableCheck: false }).concat(),
 });
 

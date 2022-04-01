@@ -1,8 +1,5 @@
-import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { RootState, AppThunk } from "../../app/store";
-import ReactQuill from "react-quill";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import * as CONST from "../../consts";
-import React from "react";
 
 export interface ImageState {
     x: number;
@@ -22,12 +19,18 @@ interface SourcesState {
     // quillRef: ReactQuill | null;
     // currentTextareaRef: React.RefObject<HTMLTextAreaElement>;
     quillRef: { current: any };
-    currentTextRef: any;
-    currentTextareaRef: any;
     isEditing: boolean;
+    isEditingImage: boolean;
     isLoading: boolean;
+    imageRef: any;
     image: ImageState;
     images: ImageState[];
+    imageColor: {
+        red: number;
+        green: number;
+        blue: number;
+        hex: string;
+    };
     text: TextState;
     texts: TextState[];
     transformer: {
@@ -44,16 +47,22 @@ interface SourcesState {
 
 const initialState: SourcesState = {
     quillRef: { current: null },
-    currentTextareaRef: { current: null },
-    currentTextRef: { current: null },
     isEditing: false,
+    isEditingImage: false,
     isLoading: false,
     image: {
         x: 0,
         y: 0,
         src: "",
     },
+    imageRef: null,
     images: [],
+    imageColor: {
+        red: 0,
+        green: 0,
+        blue: 0,
+        hex: "#000000",
+    },
     text: {
         id: 0,
         x: 0,
@@ -104,13 +113,6 @@ export const sourcesSlice = createSlice({
                     ...text,
                 };
             });
-
-            // if (action.payload.textRef) {
-            //     state.currentTextRef = action.payload.textRef;
-            // }
-        },
-        onCreateTextarea: (state, action: PayloadAction<{ textareaRef: any }>) => {
-            state.currentTextareaRef.current = action.payload.textareaRef;
         },
         onDrop: (
             state,
@@ -142,6 +144,7 @@ export const sourcesSlice = createSlice({
         },
         onDownload: (_, action) => {
             const link = document.createElement("a");
+
             link.download = Math.random().toString() + ".png";
             link.href = action.payload;
             document.body.appendChild(link);
@@ -195,8 +198,23 @@ export const sourcesSlice = createSlice({
             // action.payload.transformerRef.nodes(selected);
         },
         onContextMenuDelete: (state, action) => {},
-        onCreateQuill: (state, action) => {
-            // console.log(action.payload);
+        onIsUpdateShape: (state, action: PayloadAction<{ isUpdating: boolean; imageRef?: any }>) => {
+            state.isEditingImage = action.payload.isUpdating;
+
+            if (action.payload.imageRef) {
+                state.imageRef = action.payload.imageRef;
+            }
+        },
+        onUpdateShape: (state, action: PayloadAction<{ red: number; green: number; blue: number; hex: string }>) => {
+            state.imageColor.red = action.payload.red;
+            state.imageColor.green = action.payload.green;
+            state.imageColor.blue = action.payload.blue;
+            state.imageColor.hex = action.payload.hex;
+
+            state.imageRef.current.cache();
+            state.imageRef.current.red(action.payload.red);
+            state.imageRef.current.green(action.payload.green);
+            state.imageRef.current.blue(action.payload.blue);
         },
     },
 });
@@ -206,7 +224,6 @@ export const {
     onDragText,
     onDrop,
     onStoreQuill,
-    onCreateTextarea,
     onEditText,
     onSwitchMaterials,
     onUploadImages,
@@ -216,7 +233,8 @@ export const {
     onMouseMove,
     onMouseUp,
     onContextMenuDelete,
-    onCreateQuill,
+    onIsUpdateShape,
+    onUpdateShape,
 } = sourcesSlice.actions;
 
 export default sourcesSlice.reducer;
