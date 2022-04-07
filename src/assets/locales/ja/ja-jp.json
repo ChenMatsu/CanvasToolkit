@@ -17,10 +17,13 @@
         "SiderMenu_Resize": "ズーム"
     },
     "Sources": {
-        "UploadTitle": "クリックしてアップロードできます",
+        "UploadTitle": "クリックしてアップロード",
         "UploadButton": "写真をアップロード",
         "Title": "タイトル",
         "Subtitle": "サブタイトル",
         "Paragraph": "段落"
+    },
+    "Workspace": {
+        "DeleteButton": "デリート"
     }
 }

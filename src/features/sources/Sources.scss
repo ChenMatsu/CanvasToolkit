@@ -15,6 +15,7 @@
 
 #sources-operations {
     h3 {
+        text-align: center;
         color: $main-text-color;
         letter-spacing: $base-width;
         width: 90%;
@@ -35,7 +36,8 @@
     text-align: center;
     h1,
     h3,
-    p {
+    p,
+    article {
         margin: $base-margin * 2;
         padding: $base-padding * 2;
         letter-spacing: $base-width;

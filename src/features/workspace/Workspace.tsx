@@ -1,9 +1,11 @@
-import React, { DragEvent, useCallback, useEffect, useRef } from "react";
+import { DragEvent, useCallback, useEffect, useRef } from "react";
 import { Stage, Layer, Image, Rect, Text, Transformer } from "react-konva";
+import { useTranslation } from "react-i18next";
 import ReactQuill from "react-quill";
+import Konva from "konva";
+import useImage from "use-image";
 import { useAppSelector, useAppDispatch } from "../../app/hooks";
 import { AppDispatch } from "../../app/store";
-import { onDrop, onClickTap, onEditText, onMouseDown, onMouseMove, onMouseUp, ImageState, TextState, onIsUpdateShape } from "../sources/sourceSlice";
 import { Stage as StageType } from "konva/lib/Stage";
 import { Rect as RectType } from "konva/lib/shapes/Rect";
 import { Layer as LayerType } from "konva/lib/Layer";
@@ -11,9 +13,8 @@ import { Image as ImageType } from "konva/lib/shapes/Image";
 import { Text as TextType } from "konva/lib/shapes/Text";
 import { KonvaEventObject } from "konva/lib/Node";
 import { Transformer as TransformerType } from "konva/lib/shapes/Transformer";
-import Konva from "konva";
-import useImage from "use-image";
-import { onStoreStage } from "./workspaceSlice";
+import { onDrop, onClickTap, onEditText, onMouseDown, onMouseMove, onMouseUp, ImageState, TextState, onIsUpdateShape } from "../sources/sourceSlice";
+import { onStoreStage, onSaveCurrentShape } from "./workspaceSlice";
 import TopBar from "./TopBar";
 import * as CONST from "../../consts";
 import "./Workspace.scss";
@@ -115,7 +116,7 @@ const EditableKonvaText = ({
         quillEditor.root.style.fontStyle = konvaTextRef.current!.getAttr("fontStyle");
         quillEditor.root.style.resize = "none";
         quillEditor.root.style.zIndex = "100";
-        quillEditor.root.style.border = `3px double ${themeBackgroundColor}`;
+        // quillEditor.root.style.border = `3px double ${themeBackgroundColor}`;
         quillEditor.root.style.background = "transparent";
         document.body.appendChild(quillEditor.root);
 
@@ -148,6 +149,7 @@ const EditableKonvaText = ({
                 }
 
                 // Disconnect ReactQuill Editor and Remove from DOM
+                transRef.nodes([]);
                 quillRef.current.unhookEditor(quillEditor);
                 document.getElementById("quill-editor")?.remove();
             }
@@ -158,21 +160,20 @@ const EditableKonvaText = ({
 };
 
 const Workspace = () => {
+    const { t } = useTranslation(["Workspace"]);
     const dispatch = useAppDispatch();
-
     let workspaceTopbar = document.getElementById("workspace-topbar") as HTMLDivElement;
     let workspaceContainer = document.getElementById("workspace-stage-container")! as HTMLDivElement;
     let menuNode = document.getElementById("shape-menu")! as HTMLDivElement;
     let deleteButtonNode = document.getElementById("shape-menu-delete-button") as HTMLDivElement;
-    let currentShape: ImageType | TextType;
 
     const stageRef = useRef<StageType>(null);
     const layerRef = useRef<LayerType>(null);
     const rectRef = useRef<RectType>(null);
     const transRef = useRef<TransformerType>(null);
-    const { stage } = useAppSelector((state) => state.workspace);
+    const { stage, isImported, currentShape } = useAppSelector((state) => state.workspace);
     const { currentCategory, themeBackgroundColor } = useAppSelector((state) => state.layout);
-    const { image, images, text, texts, quillRef, imageColor } = useAppSelector((state) => state.source);
+    const { image, images, text, texts, quillRef } = useAppSelector((state) => state.source);
 
     const fitStageIntoParentContainer = useCallback(() => {
         const workspaceWidth = workspaceContainer.offsetWidth;
@@ -199,7 +200,7 @@ const Workspace = () => {
             default:
                 dispatch(
                     onDrop({
-                        id: 0,
+                        id: Math.random(),
                         ...image,
                         ...stageRef.current?.getPointerPosition(),
                         currentCategory,
@@ -223,7 +224,7 @@ const Workspace = () => {
             return;
         }
 
-        if (!event.target.hasName("image")) {
+        if (!event.target.hasName("image") && !event.target.hasName("text")) {
             return;
         }
 
@@ -245,8 +246,8 @@ const Workspace = () => {
             transRef.current?.nodes(nodes);
         }
     };
-    var x1: number, y1: number, x2: number, y2: number;
 
+    let x1: number, y1: number, x2: number, y2: number;
     const onDownShape = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
         if (e.target !== stageRef.current) {
             return;
@@ -292,10 +293,16 @@ const Workspace = () => {
             rectRef.current?.visible(false);
         });
 
-        const shapes = stageRef.current?.find(".image")!;
+        const imageShapes = stageRef.current?.find(".image")!;
+        const textShapes = stageRef.current?.find(".text")!;
+
         let box = rectRef.current?.getClientRect();
-        let selected = shapes.filter((shape: Konva.Node) => Konva.Util.haveIntersection(box, shape.getClientRect()));
-        transRef.current?.nodes(selected);
+        // Select Images
+        let selectedImages = imageShapes.filter((image: Konva.Node) => Konva.Util.haveIntersection(box, image.getClientRect()));
+        // Select Texts
+        let selectedTexts = textShapes.filter((text: Konva.Node) => Konva.Util.haveIntersection(box, text.getClientRect()));
+        // Combine Selected Shapes into TransformerNode
+        transRef.current?.nodes([...selectedImages, ...selectedTexts]);
     };
 
     const onContextMenu = (e: KonvaEventObject<PointerEvent>) => {
@@ -305,7 +312,9 @@ const Workspace = () => {
             return;
         }
 
-        currentShape = e.target as ImageType | TextType;
+        // TODO: Latency
+        dispatch(onSaveCurrentShape(e.target as ImageType | TextType));
+        // currentShape = e.target as ImageType | TextType;
 
         const stagePointerPositions = stageRef.current!.getPointerPosition();
         menuNode.style.display = "initial";
@@ -318,7 +327,8 @@ const Workspace = () => {
             if (!curShape) {
                 return;
             }
-            curShape.destroy();
+
+            currentShape.destroy();
             transRef.current?.nodes([]);
         });
 
@@ -345,7 +355,7 @@ const Workspace = () => {
         menuNode = document.getElementById("shape-menu") as HTMLDivElement;
         deleteButtonNode = document.getElementById("shape-menu-delete-button") as HTMLDivElement;
 
-        const topbarHeight = workspaceTopbar.offsetHeight + 4 + "px";
+        const topbarHeight = `${workspaceTopbar.offsetHeight + 4}px`;
         workspaceContainer.style.height = `calc(100% - ${topbarHeight})`;
 
         stageRef.current?.width(workspaceContainer.offsetWidth);
@@ -364,24 +374,26 @@ const Workspace = () => {
                 <div id="shape-menu">
                     <div>
                         <button id="shape-menu-delete-button" onClick={() => onDeleteShape(currentShape)}>
-                            <span>Delete</span>
+                            <span>{t("DeleteButton")}</span>
                         </button>
                     </div>
                 </div>
-                <Stage
-                    ref={stageRef}
-                    className="workspace-stage-canvas"
-                    onTap={onClickTapShape}
-                    onClick={onClickTapShape}
-                    onMouseDown={onDownShape}
-                    onMouseMove={onMoveShape}
-                    onMouseUp={onUpShape}
-                    onTouchStart={onDownShape}
-                    onTouchMove={onMoveShape}
-                    onTouchEnd={onUpShape}
-                    onContextMenu={onContextMenu}>
-                    <Layer name="workspace-layer" ref={layerRef}>
-                        {/* <Rect
+
+                <div id="workspace-reuse-container">
+                    <Stage
+                        ref={stageRef}
+                        // className="workspace-stage-canvas"
+                        onTap={onClickTapShape}
+                        onClick={onClickTapShape}
+                        onMouseDown={onDownShape}
+                        onMouseMove={onMoveShape}
+                        onMouseUp={onUpShape}
+                        onTouchStart={onDownShape}
+                        onTouchMove={onMoveShape}
+                        onTouchEnd={onUpShape}
+                        onContextMenu={onContextMenu}>
+                        <Layer name="workspace-layer" ref={layerRef}>
+                            {/* <Rect
                             id="canvas-background"
                             listening={false}
                             x={0}
@@ -391,30 +403,31 @@ const Workspace = () => {
                             fill="#343f4b"
                         /> */}
 
-                        <Rect ref={rectRef} name="rect" fill="rgba(0,0,255,0.5)" visible={false} />
+                            <Rect ref={rectRef} name="rect" fill="rgba(0,0,255,0.5)" visible={false} />
 
-                        {images.map((image: ImageState, index: number) => {
-                            return <URLImage key={index} image={image} transRef={transRef.current!} dispatch={dispatch} />;
-                        })}
+                            {images.map((image: ImageState, index: number) => {
+                                return <URLImage key={index} image={image} transRef={transRef.current!} dispatch={dispatch} />;
+                            })}
 
-                        {texts.map((text: TextState, index: number) => {
-                            return (
-                                <EditableKonvaText
-                                    key={index}
-                                    text={text}
-                                    textIdx={index}
-                                    stageRef={stage}
-                                    quillRef={quillRef}
-                                    transRef={transRef.current!}
-                                    themeBackgroundColor={themeBackgroundColor}
-                                    dispatch={dispatch}
-                                />
-                            );
-                        })}
+                            {texts.map((text: TextState, index: number) => {
+                                return (
+                                    <EditableKonvaText
+                                        key={index}
+                                        text={text}
+                                        textIdx={index}
+                                        stageRef={stage}
+                                        quillRef={quillRef}
+                                        transRef={transRef.current!}
+                                        themeBackgroundColor={themeBackgroundColor}
+                                        dispatch={dispatch}
+                                    />
+                                );
+                            })}
 
-                        <Transformer name="Transformer" ref={transRef} />
-                    </Layer>
-                </Stage>
+                            <Transformer name="Transformer" ref={transRef} />
+                        </Layer>
+                    </Stage>
+                </div>
             </div>
         </div>
     );

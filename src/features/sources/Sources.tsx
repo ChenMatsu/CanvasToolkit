@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { onDragText, onSwitchMaterials, onUploadImages } from "./sourceSlice";
@@ -6,7 +6,6 @@ import SourceMaterial from "./SoucreMaterial";
 import { BiCloudUpload } from "react-icons/bi";
 import "./Sources.scss";
 import * as CONST from "../../consts";
-
 import CIRCLE_T1 from "../../assets/images/1-circle-1.svg";
 import RECT_T1 from "../../assets/images/2-rect-1.svg";
 import TRIANGLE_T1 from "../../assets/images/3-triangle-1.svg";
@@ -14,28 +13,104 @@ import TRIANGLE2_T1 from "../../assets/images/4-triangle2-1.svg";
 import POLY_T1 from "../../assets/images/5-poly-1.svg";
 import POLY2_T1 from "../../assets/images/6-poly-1.svg";
 import ARROW_T1 from "../../assets/images/7-arrow-1.svg";
+import CIRCLE_T2 from "../../assets/images/1-circle-2.svg";
+import RECT_T2 from "../../assets/images/2-rect-2.svg";
+import TRIANGLE_T2 from "../../assets/images/3-triangle-2.svg";
+import TRIANGLE2_T2 from "../../assets/images/4-triangle2-2.svg";
+import POLY_T2 from "../../assets/images/5-poly-2.svg";
+import POLY2_T2 from "../../assets/images/6-poly-2.svg";
+import ARROW_T2 from "../../assets/images/7-arrow-2.svg";
+import CIRCLE_T3 from "../../assets/images/1-circle-3.svg";
+import RECT_T3 from "../../assets/images/2-rect-3.svg";
+import TRIANGLE_T3 from "../../assets/images/3-triangle-3.svg";
+import TRIANGLE2_T3 from "../../assets/images/4-triangle2-3.svg";
+import POLY_T3 from "../../assets/images/5-poly-3.svg";
+import POLY2_T3 from "../../assets/images/6-poly-3.svg";
+import ARROW_T3 from "../../assets/images/7-arrow-3.svg";
+import Cloud from "../../assets/images/cloud.svg";
+import Lighten from "../../assets/images/lightning.svg";
+import Moon from "../../assets/images/moon.svg";
+import Focus from "../../assets/images/focus.svg";
+import Star from "../../assets/images/star.svg";
 
 const ELEMENTS = [
     {
         src: CIRCLE_T1,
     },
     {
+        src: CIRCLE_T2,
+    },
+    {
+        src: CIRCLE_T3,
+    },
+    {
         src: RECT_T1,
+    },
+    {
+        src: RECT_T2,
+    },
+    {
+        src: RECT_T3,
     },
     {
         src: TRIANGLE_T1,
     },
     {
+        src: TRIANGLE_T2,
+    },
+    {
+        src: TRIANGLE_T3,
+    },
+    {
         src: TRIANGLE2_T1,
+    },
+    {
+        src: TRIANGLE2_T2,
+    },
+    {
+        src: TRIANGLE2_T3,
     },
     {
         src: POLY_T1,
     },
     {
+        src: POLY_T2,
+    },
+    {
+        src: POLY_T3,
+    },
+    {
         src: POLY2_T1,
     },
     {
+        src: POLY2_T2,
+    },
+    {
+        src: POLY2_T3,
+    },
+    {
         src: ARROW_T1,
+    },
+    {
+        src: ARROW_T2,
+    },
+    {
+        src: ARROW_T3,
+    },
+    {
+        src: Cloud,
+    },
+    {
+        src: Moon,
+    },
+    {
+        src: Lighten,
+    },
+    {
+        src: Star,
+    },
+    {
+        src: Focus,
     },
 ];
 

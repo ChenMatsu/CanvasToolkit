@@ -1,15 +1,17 @@
 import Konva from "konva";
+import { KonvaEventObject } from "konva/lib/Node";
 import { useState } from "react";
 import { useAppSelector, useAppDispatch } from "../../app/hooks";
 import { useTranslation } from "react-i18next";
 import { AiOutlineSetting } from "react-icons/ai";
 import { SketchPicker } from "react-color";
 import { Image as ImageType } from "konva/lib/shapes/Image";
+import { Text as TextType } from "konva/lib/shapes/Text";
 import { BiPlusCircle, BiDoorOpen, BiSave, BiWorld, BiLink, BiChat, BiInfoCircle, BiDownload } from "react-icons/bi";
 import "./Header.scss";
 import { onDownload } from "../sources/sourceSlice";
 import { onChangeTheme } from "../layout/layoutSlice";
-import { onSaveCanvas } from "../workspace/workspaceSlice";
+import { onImportCanvas, onSaveCanvas } from "../workspace/workspaceSlice";
 import Button from "@mui/material/Button";
 import ButtonGroup from "@mui/material/ButtonGroup";
 import Popover from "@mui/material/Popover";
@@ -36,6 +38,7 @@ const Header = () => {
     const { t } = useTranslation(["Layout"]);
     const { themeBackgroundColor } = useAppSelector((state) => state.layout);
     const { stage } = useAppSelector((state) => state.workspace);
+    const { images } = useAppSelector((state) => state.source);
     const [popoverEl, setPopoverEl] = useState<HTMLElement | null>(null);
     const [savePopoverEl, setSavePopoverEl] = useState<HTMLElement | null>(null);
     const [settingPopoverEl, setSettingPopoverEl] = useState<HTMLElement | null>(null);
@@ -51,9 +54,9 @@ const Header = () => {
     return (
         <div id="layout-header" style={{ background: themeBackgroundColor }}>
             <ul>
-                <li>
+                {/* <li>
                     <BiPlusCircle className="header-icons" /> {t("HeaderLeft_New")}
-                </li>
+                </li> */}
                 <li
                     onClick={() => {
                         document.getElementById("header-left-import")?.click();
@@ -65,20 +68,7 @@ const Header = () => {
                         multiple={false}
                         hidden
                         onChange={(e) => {
-                            const canvasNodes = e.target.files![0];
-                            const reader = new FileReader();
-                            reader.readAsText(canvasNodes);
-                            reader.onload = async (e) => {
-                                const stage = Konva.Node.create(e.target?.result, "workspace-stage-container");
-                                stage.find("Image").forEach((imageNode: ImageType) => {
-                                    const nativeImage = new window.Image();
-                                    nativeImage.onload = () => {
-                                        imageNode.image(nativeImage);
-                                        imageNode.getLayer()?.batchDraw();
-                                    };
-                                    nativeImage.src = imageNode.getAttr("source");
-                                });
-                            };
+                            dispatch(onImportCanvas({ canvasJSON: e.target.files![0], stageRef: stage }));
                         }}
                     />
                     <BiDoorOpen className="header-icons" />
@@ -140,9 +130,9 @@ const Header = () => {
                         <BiChat className="header-icons" /> {t("HeaderRight_Chat")}
                     </li>
                 </a>
-                <li>
+                {/* <li>
                     <BiInfoCircle className="header-icons" /> {t("HeaderRight_About")}
-                </li>
+                </li> */}
                 <li
                     onClick={() => {
                         const stageLayer = stage.find(".workspace-layer")[0];
@@ -165,7 +155,7 @@ const Header = () => {
                             horizontal: "left",
                         }}
                         onClose={() => setSettingPopoverEl(null)}>
-                        <SketchPicker onChange={(color) => dispatch(onChangeTheme({ themeColor: color.hex }))} />
+                        <SketchPicker onChange={(color) => dispatch(onChangeTheme({ themeColor: color.hex }))} color={themeBackgroundColor} />
                     </Popover>
                 </li>
             </ul>

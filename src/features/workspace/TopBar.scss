@@ -13,6 +13,7 @@
         color: $main-text-color;
 
         li {
+            width: auto;
             padding: $base-padding * 2 $base-padding * 2;
             transition: 0.2s;
             cursor: pointer;

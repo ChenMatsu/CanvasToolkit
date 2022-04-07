@@ -23,5 +23,8 @@
         "Title": "標題",
         "Subtitle": "副標題",
         "Paragraph": "段落"
+    },
+    "Workspace": {
+        "DeleteButton": "刪除"
     }
 }

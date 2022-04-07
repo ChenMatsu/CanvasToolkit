@@ -127,6 +127,7 @@ export const sourcesSlice = createSlice({
                         size: action.payload.size!,
                         content: action.payload.content!,
                     });
+
                     break;
                 default:
                     state.images.push({
@@ -145,7 +146,7 @@ export const sourcesSlice = createSlice({
         onDownload: (_, action) => {
             const link = document.createElement("a");
 
-            link.download = Math.random().toString() + ".png";
+            link.download = "ZD-" + new Date().toISOString().split("T")[0] + ".png";
             link.href = action.payload;
             document.body.appendChild(link);
             link.click();

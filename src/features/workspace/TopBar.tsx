@@ -1,10 +1,11 @@
-import { useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAppSelector, useAppDispatch } from "../../app/hooks";
-import { CompactPicker } from "react-color";
-import ReactQuill from "react-quill";
-import { BiUndo, BiRedo, BiDroplet, BiLock, BiLockOpen, BiCopy, BiTrash } from "react-icons/bi";
-import "./TopBar.scss";
 import { onStoreQuill, onUpdateShape } from "../sources/sourceSlice";
+import { CompactPicker } from "react-color";
+import { Popover } from "@mui/material";
+import ReactQuill from "react-quill";
+import { BiUndo, BiRedo, BiDroplet, BiLock, BiLockOpen, BiCopy, BiTrash, BiPaint } from "react-icons/bi";
+import "./TopBar.scss";
 
 // React-Quill Custom Toolbar
 const toolbar = [
@@ -19,6 +20,8 @@ const TopBar = () => {
     const quillRef = useRef<ReactQuill>(null);
     const { isEditing, isEditingImage, imageColor } = useAppSelector((state) => state.source);
 
+    const [settingPopoverEl, setSettingPopoverEl] = useState<HTMLElement | null>(null);
+
     useEffect(() => {
         if (quillRef.current) {
             dispatch(onStoreQuill(quillRef.current));
@@ -28,13 +31,13 @@ const TopBar = () => {
     return (
         <div id="workspace-topbar">
             <ul>
-                <li>
+                {/* <li>
                     <BiUndo className="workspace-topbar-icons" onClick={() => quillRef.current?.getEditor()} />
                 </li>
                 
                 <li>
                     <BiRedo className="workspace-topbar-icons" />
-                </li>
+                </li> */}
 
                 <li style={{ width: "100%", visibility: isEditing ? "visible" : "hidden" }}>
                     <ReactQuill
@@ -43,26 +46,45 @@ const TopBar = () => {
                             toolbar: toolbar,
                         }}
                         style={{
+                            width: "max-content",
                             zIndex: 1000,
                         }}>
                         <div style={{ display: "none" }} />
                     </ReactQuill>
                 </li>
 
-                <li style={{ width: "100%", display: isEditingImage ? "block" : "none" }}>
-                    <CompactPicker
-                        color={imageColor.hex}
-                        onChange={(color) =>
-                            dispatch(
-                                onUpdateShape({
-                                    red: color.rgb.r,
-                                    green: color.rgb.g,
-                                    blue: color.rgb.b,
-                                    hex: color.hex,
-                                })
-                            )
-                        }
-                    />
+                <li
+                    style={{ width: "100%", visibility: isEditingImage ? "visible" : "hidden" }}
+                    onMouseEnter={(e) => setSettingPopoverEl(e.currentTarget)}
+                    onMouseLeave={() => setSettingPopoverEl(null)}>
+                    <BiPaint className="workspace-topbar-icons" />
+                    <Popover
+                        id="mouse-over-popover"
+                        open={Boolean(settingPopoverEl)}
+                        anchorEl={settingPopoverEl}
+                        anchorOrigin={{
+                            vertical: "bottom",
+                            horizontal: "left",
+                        }}
+                        transformOrigin={{
+                            vertical: "top",
+                            horizontal: "left",
+                        }}
+                        onClose={() => setSettingPopoverEl(null)}>
+                        <CompactPicker
+                            color={imageColor.hex}
+                            onChange={(color) =>
+                                dispatch(
+                                    onUpdateShape({
+                                        red: color.rgb.r,
+                                        green: color.rgb.g,
+                                        blue: color.rgb.b,
+                                        hex: color.hex,
+                                    })
+                                )
+                            }
+                        />
+                    </Popover>
                 </li>
             </ul>
             <ul>
@@ -75,9 +97,9 @@ const TopBar = () => {
                 <li>
                     <BiCopy className="workspace-topbar-icons" />
                 </li> */}
-                <li>
+                {/* <li>
                     <BiTrash className="workspace-topbar-icons" />
-                </li>
+                </li> */}
             </ul>
         </div>
     );

@@ -22,5 +22,8 @@
         "Title": "Title",
         "Subtitle": "Subtitle",
         "Paragraph": "Paragraph"
+    },
+    "Workspace": {
+        "DeleteButton": "Delete"
     }
 }

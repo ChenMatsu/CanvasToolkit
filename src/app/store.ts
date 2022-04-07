@@ -1,11 +1,9 @@
 import { configureStore, combineReducers, ThunkAction, Action } from "@reduxjs/toolkit";
-import counterReducer from "../features/counter/counterSlice";
 import layoutReducer from "../features/layout/layoutSlice";
 import workspaceReducer from "../features/workspace/workspaceSlice";
 import sourceReducer from "../features/sources/sourceSlice";
 
 const reducers = combineReducers({
-    counter: counterReducer,
     workspace: workspaceReducer,
     source: sourceReducer,
     layout: layoutReducer,
