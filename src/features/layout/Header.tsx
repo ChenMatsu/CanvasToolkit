@@ -181,15 +181,8 @@ const Header = () => {
                     image.position({ x: stage.getPointerPosition()!.x, y: stage.getPointerPosition()!.y });
                     // Set image to the pointer
                     image.offset({ x: image.width() / 2, y: image.height() / 2 });
-                    image.filters([Konva.Filters.RGB]);
+                    image.filters([Konva.Filters.RGBA]);
                     image.setAttr("source", e.target.src);
-
-                    // Default Image Color
-                    image.setAttrs({
-                        red: 0,
-                        green: 161,
-                        blue: 255,
-                    });
 
                     image.on("click", (e) => {
                         dispatch(
@@ -349,17 +342,18 @@ const Header = () => {
                                 dispatch(onStoreTransformer({ transformer: trans }));
 
                                 stage.find("Image").forEach((imageNode: ImageInterface | any) => {
+                                    console.log(imageNode);
                                     const nativeImage = new window.Image();
                                     nativeImage.crossOrigin = "Anonymous";
                                     nativeImage.onload = async () => {
                                         imageNode.image(nativeImage);
                                         imageNode.cache();
-                                        imageNode.filters([Konva.Filters.RGB]);
-
+                                        imageNode.filters([Konva.Filters.RGBA]);
                                         imageNode.setAttrs({
                                             red: imageNode.getAttr("red"),
                                             green: imageNode.getAttr("green"),
                                             blue: imageNode.getAttr("blue"),
+                                            alpha: imageNode.getAttr("alpha"),
                                         });
 
                                         imageNode.on("click", (e: MouseEvent) => {

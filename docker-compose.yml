@@ -1,0 +1,23 @@
+version: "3.3"
+
+networks:
+    zd-2d:
+        driver: bridge
+
+services:
+    frontend:
+        build:
+            context: .
+            dockerfile: Dockerfile.prod
+        container_name: zd-2d-toolkit
+        volumes:
+            - ./src:/app/src
+            - /node_modules
+        ports:
+            - 3003:80
+        image: matsuepsilon/zd-2d-toolkit
+        stdin_open: true
+        tty: true
+        restart: always
+        networks:
+            - zd-2d

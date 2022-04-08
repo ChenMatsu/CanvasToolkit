@@ -19,7 +19,17 @@ import TopBar from "./TopBar";
 import * as CONST from "../../consts";
 import "./Workspace.scss";
 
-const URLImage = ({ image, transRef, dispatch }: { image: { src: string; x: number; y: number }; transRef: TransformerType; dispatch: AppDispatch }) => {
+const URLImage = ({
+    image,
+    currentCategory,
+    transRef,
+    dispatch,
+}: {
+    image: { src: string; x: number; y: number };
+    currentCategory: string;
+    transRef: TransformerType;
+    dispatch: AppDispatch;
+}) => {
     const [img] = useImage(image.src, "anonymous");
     const imageRef = useRef<ImageType>(null);
 
@@ -31,9 +41,14 @@ const URLImage = ({ image, transRef, dispatch }: { image: { src: string; x: numb
             // Matsu: Save Image Source to ImageRef in order to export as JSON Format Canvas Node
             const imageAttrs = imageRef.current?.getAttrs();
             imageRef.current?.setAttr("source", img?.src);
-            imageRef.current?.setAttr("red", imageAttrs.red ? imageRef.current.red : 120);
-            imageRef.current?.setAttr("green", imageAttrs.green ? imageRef.current.green : 220);
+            imageRef.current?.setAttr("red", imageAttrs.red ? imageRef.current.red : 0);
+            imageRef.current?.setAttr("green", imageAttrs.green ? imageRef.current.green : 161);
             imageRef.current?.setAttr("blue", imageAttrs.blue ? imageRef.current.blue : 255);
+            if (currentCategory === CONST.default.SIDER_ITEMS.ELEMENTS) {
+                imageRef.current?.setAttr("alpha", 1);
+            } else {
+                imageRef.current?.setAttr("alpha", 0.5);
+            }
         }
     }, [img]);
 
@@ -54,7 +69,15 @@ const URLImage = ({ image, transRef, dispatch }: { image: { src: string; x: numb
             image={img}
             x={image.x}
             y={image.y}
-            filters={[Konva.Filters.RGB]}
+            // filters={(() => {
+            //     switch (currentCategory) {
+            //         case CONST.default.SIDER_ITEMS.ELEMENTS:
+            //             return [Konva.Filters.RGBA];
+            //         default:
+            //             return [Konva.Filters.RGB];
+            //     }
+            // })()}
+            filters={[Konva.Filters.RGBA]}
             offsetX={img ? img.width / 2 : 0}
             offsetY={img ? img.height / 2 : 0}
             onDragMove={(e) => e.evt.preventDefault()}
@@ -411,7 +434,9 @@ const Workspace = () => {
                             <Rect ref={rectRef} name="rect" fill="rgba(0,0,255,0.2)" visible={false} />
 
                             {images.map((image: ImageState, index: number) => {
-                                return <URLImage key={index} image={image} transRef={transRef.current!} dispatch={dispatch} />;
+                                return (
+                                    <URLImage key={index} image={image} currentCategory={currentCategory} transRef={transRef.current!} dispatch={dispatch} />
+                                );
                             })}
 
                             {texts.map((text: TextState, index: number) => {
