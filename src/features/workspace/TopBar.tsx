@@ -19,12 +19,11 @@ const TopBar = () => {
     const dispatch = useAppDispatch();
     const quillRef = useRef<ReactQuill>(null);
     const { isEditing, isEditingImage, imageColor } = useAppSelector((state) => state.source);
-
     const [settingPopoverEl, setSettingPopoverEl] = useState<HTMLElement | null>(null);
 
     useEffect(() => {
         if (quillRef.current) {
-            dispatch(onStoreQuill(quillRef.current));
+            dispatch(onStoreQuill({ quillRef: quillRef.current }));
         }
     }, [quillRef.current]);
 

@@ -18,7 +18,7 @@ export interface TextState {
 interface SourcesState {
     // quillRef: ReactQuill | null;
     // currentTextareaRef: React.RefObject<HTMLTextAreaElement>;
-    quillRef: { current: any };
+    quillRef: any;
     isEditing: boolean;
     isEditingImage: boolean;
     isLoading: boolean;
@@ -46,7 +46,7 @@ interface SourcesState {
 }
 
 const initialState: SourcesState = {
-    quillRef: { current: null },
+    quillRef: {},
     isEditing: false,
     isEditingImage: false,
     isLoading: false,
@@ -97,10 +97,10 @@ export const sourcesSlice = createSlice({
             state.text.content = action.payload.text;
             state.text.size = action.payload.size;
         },
-        onStoreQuill: (state, action) => {
-            state.quillRef.current = action.payload;
+        onStoreQuill: (state, action: PayloadAction<{ quillRef: any }>) => {
+            state.quillRef = action.payload.quillRef;
         },
-        onEditText: (state, action: PayloadAction<{ textIdx: number; isEditing: boolean; text?: string }>) => {
+        onEditText: (state, action: PayloadAction<{ textIdx?: number; isEditing: boolean; text?: string }>) => {
             state.isEditing = action.payload.isEditing;
             state.texts = state.texts.map((text) => {
                 if (text.id === action.payload.textIdx) {
@@ -202,7 +202,9 @@ export const sourcesSlice = createSlice({
         onIsUpdateShape: (state, action: PayloadAction<{ isUpdating: boolean; imageRef?: any }>) => {
             state.isEditingImage = action.payload.isUpdating;
 
-            if (action.payload.imageRef) {
+            if (action.payload.imageRef && action.payload.imageRef.current) {
+                state.imageRef = action.payload.imageRef.current;
+            } else {
                 state.imageRef = action.payload.imageRef;
             }
         },
@@ -212,10 +214,12 @@ export const sourcesSlice = createSlice({
             state.imageColor.blue = action.payload.blue;
             state.imageColor.hex = action.payload.hex;
 
-            state.imageRef.current.cache();
-            state.imageRef.current.red(action.payload.red);
-            state.imageRef.current.green(action.payload.green);
-            state.imageRef.current.blue(action.payload.blue);
+            state.imageRef.cache();
+            state.imageRef.red(action.payload.red);
+            state.imageRef.green(action.payload.green);
+            state.imageRef.blue(action.payload.blue);
+
+            // state.isEditingImage = false;
         },
     },
 });

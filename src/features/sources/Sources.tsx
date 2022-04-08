@@ -292,6 +292,7 @@ const Sources = () => {
                         return (
                             <div id="sources-text-boxes">
                                 <h1
+                                    className="sources-text-items"
                                     draggable
                                     onDragStart={(e) => {
                                         dispatch(onDragText({ text: e.currentTarget.innerText, size: e.currentTarget.getBoundingClientRect().height / 2 }));
@@ -299,6 +300,7 @@ const Sources = () => {
                                     {t("Title")}
                                 </h1>
                                 <h3
+                                    className="sources-text-items"
                                     draggable
                                     onDragStart={(e) => {
                                         dispatch(onDragText({ text: e.currentTarget.innerText, size: e.currentTarget.getBoundingClientRect().height / 2 }));
@@ -306,6 +308,7 @@ const Sources = () => {
                                     {t("Subtitle")}
                                 </h3>
                                 <p
+                                    className="sources-text-items"
                                     draggable
                                     onDragStart={(e) => {
                                         dispatch(onDragText({ text: e.currentTarget.innerText, size: e.currentTarget.getBoundingClientRect().height / 2 }));

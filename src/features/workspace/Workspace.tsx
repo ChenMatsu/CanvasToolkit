@@ -14,7 +14,7 @@ import { Text as TextType } from "konva/lib/shapes/Text";
 import { KonvaEventObject } from "konva/lib/Node";
 import { Transformer as TransformerType } from "konva/lib/shapes/Transformer";
 import { onDrop, onClickTap, onEditText, onMouseDown, onMouseMove, onMouseUp, ImageState, TextState, onIsUpdateShape } from "../sources/sourceSlice";
-import { onStoreStage, onSaveCurrentShape } from "./workspaceSlice";
+import { onStoreStage, onStoreRect, onStoreTransformer, onSaveCurrentShape, onStoreMenu } from "./workspaceSlice";
 import TopBar from "./TopBar";
 import * as CONST from "../../consts";
 import "./Workspace.scss";
@@ -29,10 +29,11 @@ const URLImage = ({ image, transRef, dispatch }: { image: { src: string; x: numb
             transRef.nodes(imageNodes);
 
             // Matsu: Save Image Source to ImageRef in order to export as JSON Format Canvas Node
+            const imageAttrs = imageRef.current?.getAttrs();
             imageRef.current?.setAttr("source", img?.src);
-            imageRef.current?.setAttr("red", imageRef.current.red);
-            imageRef.current?.setAttr("green", imageRef.current.green);
-            imageRef.current?.setAttr("blue", imageRef.current.blue);
+            imageRef.current?.setAttr("red", imageAttrs.red ? imageRef.current.red : 120);
+            imageRef.current?.setAttr("green", imageAttrs.green ? imageRef.current.green : 220);
+            imageRef.current?.setAttr("blue", imageAttrs.blue ? imageRef.current.blue : 255);
         }
     }, [img]);
 
@@ -58,7 +59,7 @@ const URLImage = ({ image, transRef, dispatch }: { image: { src: string; x: numb
             offsetY={img ? img.height / 2 : 0}
             onDragMove={(e) => e.evt.preventDefault()}
             onDragEnd={(e) => e.evt.preventDefault()}
-            onDblClick={onStartUpdateShape}
+            onClick={onStartUpdateShape}
         />
     );
 };
@@ -77,7 +78,7 @@ const EditableKonvaText = ({
     textIdx: number;
     themeBackgroundColor: string;
     stageRef: StageType;
-    quillRef: { current: ReactQuill };
+    quillRef: ReactQuill;
     transRef: TransformerType;
 }) => {
     const konvaTextRef = useRef<TextType>(null);
@@ -95,8 +96,8 @@ const EditableKonvaText = ({
         };
 
         // Connect ReactQuill Editor
-        const quillEditor = quillRef.current.getEditor();
-        quillRef.current.hookEditor(quillEditor);
+        const quillEditor = quillRef.getEditor();
+        quillRef.hookEditor(quillEditor);
 
         // unpriviledgedEditor.
 
@@ -116,7 +117,7 @@ const EditableKonvaText = ({
         quillEditor.root.style.fontStyle = konvaTextRef.current!.getAttr("fontStyle");
         quillEditor.root.style.resize = "none";
         quillEditor.root.style.zIndex = "100";
-        // quillEditor.root.style.border = `3px double ${themeBackgroundColor}`;
+        quillEditor.root.style.border = `3px double ${themeBackgroundColor}`;
         quillEditor.root.style.background = "transparent";
         document.body.appendChild(quillEditor.root);
 
@@ -150,13 +151,13 @@ const EditableKonvaText = ({
 
                 // Disconnect ReactQuill Editor and Remove from DOM
                 transRef.nodes([]);
-                quillRef.current.unhookEditor(quillEditor);
+                quillRef.unhookEditor(quillEditor);
                 document.getElementById("quill-editor")?.remove();
             }
         });
     };
 
-    return <Text draggable ref={konvaTextRef} name="text" x={text.x} y={text.y} text={text.content} fontSize={text.size} onDblClick={onEdit} />;
+    return <Text draggable ref={konvaTextRef} name="text" x={text.x} y={text.y} text={text.content} fontSize={text.size} onClick={onEdit} />;
 };
 
 const Workspace = () => {
@@ -171,9 +172,9 @@ const Workspace = () => {
     const layerRef = useRef<LayerType>(null);
     const rectRef = useRef<RectType>(null);
     const transRef = useRef<TransformerType>(null);
-    const { stage, isImported, currentShape } = useAppSelector((state) => state.workspace);
+    const { stage, currentShape, transformer } = useAppSelector((state) => state.workspace);
     const { currentCategory, themeBackgroundColor } = useAppSelector((state) => state.layout);
-    const { image, images, text, texts, quillRef } = useAppSelector((state) => state.source);
+    const { image, images, text, texts, quillRef, isEditing } = useAppSelector((state) => state.source);
 
     const fitStageIntoParentContainer = useCallback(() => {
         const workspaceWidth = workspaceContainer.offsetWidth;
@@ -224,7 +225,7 @@ const Workspace = () => {
             return;
         }
 
-        if (!event.target.hasName("image") && !event.target.hasName("text")) {
+        if ((!event.target.hasName("image") && !event.target.hasName("text")) || isEditing) {
             return;
         }
 
@@ -329,7 +330,8 @@ const Workspace = () => {
             }
 
             currentShape.destroy();
-            transRef.current?.nodes([]);
+            // transRef.current?.nodes([]);
+            transformer.nodes([]);
         });
 
         deleteButtonNode?.click();
@@ -364,7 +366,10 @@ const Workspace = () => {
         background?.width(workspaceContainer.offsetWidth);
         background?.height(workspaceContainer.offsetHeight);
 
-        dispatch(onStoreStage(stageRef.current));
+        dispatch(onStoreStage({ stage: stageRef.current }));
+        dispatch(onStoreRect({ rect: rectRef.current }));
+        dispatch(onStoreMenu({ menu: menuNode }));
+        dispatch(onStoreTransformer({ transformer: transRef.current }));
     }, []);
 
     return (
@@ -401,9 +406,9 @@ const Workspace = () => {
                             width={stageRef.current?.width()}
                             height={stageRef.current?.height()}
                             fill="#343f4b"
-                        /> */}
+                            /> */}
 
-                            <Rect ref={rectRef} name="rect" fill="rgba(0,0,255,0.5)" visible={false} />
+                            <Rect ref={rectRef} name="rect" fill="rgba(0,0,255,0.2)" visible={false} />
 
                             {images.map((image: ImageState, index: number) => {
                                 return <URLImage key={index} image={image} transRef={transRef.current!} dispatch={dispatch} />;

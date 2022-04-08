@@ -21,6 +21,7 @@ const SourceMaterial = ({ card }: { card: { src: string } }) => {
     return (
         <div className="source-material-card">
             <img
+                className="source-material-item"
                 style={{ objectFit: currentCategory === CONST.default.SIDER_ITEMS.ELEMENTS ? "contain" : "cover" }}
                 draggable
                 src={card.src}
