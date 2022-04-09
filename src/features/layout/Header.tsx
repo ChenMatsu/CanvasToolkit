@@ -167,33 +167,40 @@ const Header = () => {
         }
     };
 
-    const onCreateStage = useCallback((stage: StageInterface, trans?: Transformer, quillRef?: any) => {
+    const onCreateStage = useCallback((stage: StageInterface, currentCategory: string, trans?: Transformer, quillRef?: any) => {
         const stageLayer = stage.findOne("Layer") as LayerInterface;
         const textItems = document.getElementsByClassName("sources-text-items");
         const imageItems = document.getElementsByClassName("source-material-item");
 
         for (let i = 0; i < imageItems.length; i++) {
-            imageItems[i].addEventListener("dragend", function (e: any) {
-                Konva.Image.fromURL(e.target!.src, function (image: ImageInterface) {
-                    stageLayer.add(image);
-                    image.name("image");
-                    image.draggable(true);
-                    image.position({ x: stage.getPointerPosition()!.x, y: stage.getPointerPosition()!.y });
-                    // Set image to the pointer
-                    image.offset({ x: image.width() / 2, y: image.height() / 2 });
-                    image.filters([Konva.Filters.RGBA]);
-                    image.setAttr("source", e.target.src);
+            (function () {
+                imageItems[i].addEventListener("dragend", function (e: any) {
+                    Konva.Image.fromURL(e.target!.src, function (image: ImageInterface) {
+                        stageLayer.add(image);
+                        image.name("image");
+                        image.draggable(true);
+                        image.position({ x: stage.getPointerPosition()!.x, y: stage.getPointerPosition()!.y });
+                        // Set image to the pointer
+                        image.offset({ x: image.width() / 2, y: image.height() / 2 });
+                        image.filters([Konva.Filters.RGBA]);
+                        image.setAttr("source", e.target.src);
+                        if (currentCategory === CONST.default.SIDER_ITEMS.ELEMENTS) {
+                            image.setAttr("alpha", 1);
+                        } else {
+                            image.setAttr("alpha", 0.5);
+                        }
 
-                    image.on("click", (e) => {
-                        dispatch(
-                            onIsUpdateShape({
-                                isUpdating: true,
-                                imageRef: e.target,
-                            })
-                        );
+                        image.on("click", (e) => {
+                            dispatch(
+                                onIsUpdateShape({
+                                    isUpdating: true,
+                                    imageRef: e.target,
+                                })
+                            );
+                        });
                     });
                 });
-            });
+            })();
         }
 
         for (let i = 0; i < textItems.length; i++) {
@@ -244,8 +251,8 @@ const Header = () => {
                     quillEditor.root.style.zIndex = "100";
                     quillEditor.root.style.border = `3px double ${themeBackgroundColor}`;
                     quillEditor.root.style.background = "transparent";
+                    quillEditor.root.style.visibility = "visible";
                     document.body.appendChild(quillEditor.root);
-
                     quillEditor.setText(textNode.text().trim());
                     quillEditor.focus();
 
@@ -278,7 +285,8 @@ const Header = () => {
                             trans!.nodes([]);
                             trans!.visible(true);
                             quillRef.unhookEditor(quillEditor);
-                            document.getElementById("quill-editor")?.remove();
+                            quillEditor.root.style.visibility = "hidden";
+                            // document.getElementById("quill-editor")?.remove();
                         }
                     });
                 });
@@ -305,7 +313,7 @@ const Header = () => {
             return;
         }
 
-        onCreateStage(stage, transformer, quillRef);
+        onCreateStage(stage, currentCategory, transformer, quillRef);
     }, [materials]);
 
     return (
@@ -342,7 +350,6 @@ const Header = () => {
                                 dispatch(onStoreTransformer({ transformer: trans }));
 
                                 stage.find("Image").forEach((imageNode: ImageInterface | any) => {
-                                    console.log(imageNode);
                                     const nativeImage = new window.Image();
                                     nativeImage.crossOrigin = "Anonymous";
                                     nativeImage.onload = async () => {
@@ -410,6 +417,7 @@ const Header = () => {
                                         quillEditor.root.style.zIndex = "100";
                                         quillEditor.root.style.border = `3px double ${themeBackgroundColor}`;
                                         quillEditor.root.style.background = "transparent";
+                                        quillEditor.root.style.visibility = "visible";
                                         document.body.appendChild(quillEditor.root);
 
                                         quillEditor.setText(textNode.text().trim());
@@ -444,7 +452,8 @@ const Header = () => {
                                                 trans.nodes([]);
                                                 trans.visible(true);
                                                 quillRef.unhookEditor(quillEditor);
-                                                document.getElementById("quill-editor")?.remove();
+                                                // document.getElementById("quill-editor")?.remove();
+                                                quillEditor.root.style.visibility = "hidden";
                                             }
                                         });
                                     });
@@ -462,7 +471,7 @@ const Header = () => {
                                 dispatch(onStoreRect({ rect: rect }));
                                 dispatch(onStoreStage({ stage: stage }));
                                 dispatch(onImportCanvas({ stageRef: stage }));
-                                onCreateStage(stage, trans, quillRef);
+                                onCreateStage(stage, currentCategory, trans, quillRef);
 
                                 // Pass current stage and rect refs
                                 // Re-bind all events to newly created stage

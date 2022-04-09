@@ -121,9 +121,6 @@ const EditableKonvaText = ({
         // Connect ReactQuill Editor
         const quillEditor = quillRef.getEditor();
         quillRef.hookEditor(quillEditor);
-
-        // unpriviledgedEditor.
-
         // Place Editor Area based on Konva Text
         quillEditor.root.id = "quill-editor";
         quillEditor.root.style.position = "absolute";
@@ -142,8 +139,8 @@ const EditableKonvaText = ({
         quillEditor.root.style.zIndex = "100";
         quillEditor.root.style.border = `3px double ${themeBackgroundColor}`;
         quillEditor.root.style.background = "transparent";
+        quillEditor.root.style.visibility = "visible";
         document.body.appendChild(quillEditor.root);
-
         quillEditor.setText(konvaTextRef.current!.text().trim());
         quillEditor.focus();
 
@@ -157,25 +154,33 @@ const EditableKonvaText = ({
                         text: quillEditor.getText().trim() ? quillEditor.getText() : konvaTextRef.current!.text(),
                     })
                 );
-                const editedStyles = quillEditor.getFormat();
+                let editedStyles: any;
+                if (quillEditor && Object.keys(quillEditor).length > 0) {
+                    const editedContent = quillRef.makeUnprivilegedEditor(quillEditor);
+                    editedStyles = quillRef.getEditor().getFormat();
 
-                konvaTextRef.current!.visible(true);
-                konvaTextRef.current?.setAttr("fill", editedStyles.color ? editedStyles.color : konvaTextRef.current.getAttr("fill"));
-
-                if (editedStyles.bold && editedStyles.italic) {
-                    konvaTextRef.current!.fontStyle("italic bold");
-                } else if (editedStyles.bold) {
-                    konvaTextRef.current!.fontStyle("bold");
-                } else if (editedStyles.italic) {
-                    konvaTextRef.current!.fontStyle("italic");
-                } else {
-                    konvaTextRef.current!.fontStyle("normal");
+                    konvaTextRef.current!.visible(true);
+                    konvaTextRef.current?.setAttr("fill", editedStyles.color ? editedStyles.color : konvaTextRef.current.getAttr("fill"));
+                    konvaTextRef.current?.setText(editedContent.getText().trim() ? editedContent.getText() : konvaTextRef.current.text());
+                    if (editedStyles.bold && editedStyles.italic) {
+                        konvaTextRef.current!.fontStyle("italic bold");
+                    } else if (editedStyles.bold) {
+                        konvaTextRef.current!.fontStyle("bold");
+                    } else if (editedStyles.italic) {
+                        konvaTextRef.current!.fontStyle("italic");
+                    } else {
+                        konvaTextRef.current!.fontStyle("normal");
+                    }
                 }
 
                 // Disconnect ReactQuill Editor and Remove from DOM
                 transRef.nodes([]);
                 quillRef.unhookEditor(quillEditor);
-                document.getElementById("quill-editor")?.remove();
+                // **Warning**: Remove quill editor from dom will cause quill to get out-of-sync
+                // document.getElementById("quill-editor")?.removeChild();
+                // document.body.removeChild(quillEditor.root);
+                // document.getElementById("quill-editor")?.style.setProperty("display", "none");
+                quillEditor.root.style.visibility = "hidden";
             }
         });
     };

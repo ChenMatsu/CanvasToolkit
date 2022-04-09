@@ -138,10 +138,12 @@ export const sourcesSlice = createSlice({
                     break;
             }
         },
-        onUploadImages: (state, action: PayloadAction<string>) => {
-            state.materials.push({
-                src: action.payload,
-            });
+        onUploadImages: (state, action: PayloadAction<{ images: string[] }>) => {
+            const uploadedImages: { src: string }[] = [];
+            for (let image of action.payload.images) {
+                uploadedImages.push({ src: image });
+            }
+            state.materials = uploadedImages;
         },
         onDownload: (_, action) => {
             const link = document.createElement("a");
@@ -218,8 +220,6 @@ export const sourcesSlice = createSlice({
             state.imageRef.red(action.payload.red);
             state.imageRef.green(action.payload.green);
             state.imageRef.blue(action.payload.blue);
-
-            // state.isEditingImage = false;
         },
     },
 });

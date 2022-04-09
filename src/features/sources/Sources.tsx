@@ -270,14 +270,22 @@ const Sources = () => {
                                     accept="image/*"
                                     multiple
                                     hidden
-                                    onChange={(e) => {
-                                        for (let i = 0; i < e.target.files!.length; i++) {
-                                            const reader = new FileReader();
-                                            reader.readAsDataURL(e.target.files![i]);
-                                            reader.onload = async (e) => {
-                                                dispatch(onUploadImages(e.target?.result as string));
-                                            };
-                                        }
+                                    onChange={async (e) => {
+                                        const images: string[] = [];
+                                        const onGetImage = async () => {
+                                            for (let i = 0; i < e.target.files!.length; i++) {
+                                                await new Promise((resolve, reject) => {
+                                                    const reader = new FileReader();
+                                                    reader.readAsDataURL(e.target.files![i]);
+                                                    reader.onload = (e) => {
+                                                        resolve(e.target?.result);
+                                                    };
+                                                }).then((image: any) => images.push(image));
+                                            }
+                                        };
+                                        await onGetImage();
+
+                                        dispatch(onUploadImages({ images: images }));
                                     }}
                                 />
                                 <button
