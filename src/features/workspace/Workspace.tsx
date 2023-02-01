@@ -120,7 +120,7 @@ const EditableKonvaText = ({
 
         // Connect ReactQuill Editor
         const quillEditor = quillRef.getEditor();
-        quillRef.hookEditor(quillEditor);
+        // quillRef.hookEditor(quillEditor);
         // Place Editor Area based on Konva Text
         quillEditor.root.id = "quill-editor";
         quillEditor.root.style.position = "absolute";
@@ -175,7 +175,7 @@ const EditableKonvaText = ({
 
                 // Disconnect ReactQuill Editor and Remove from DOM
                 transRef.nodes([]);
-                quillRef.unhookEditor(quillEditor);
+                // quillRef.unhookEditor(quillEditor);
                 // **Warning**: Remove quill editor from dom will cause quill to get out-of-sync
                 // document.getElementById("quill-editor")?.removeChild();
                 // document.body.removeChild(quillEditor.root);

@@ -6,18 +6,12 @@ networks:
 
 services:
     frontend:
+        container_name: zd-2d-toolkit
+        restart: always
+        ports:
+            - 3003:80
+        networks:
+            - zd-2d
         build:
             context: .
             dockerfile: Dockerfile.prod
-        container_name: zd-2d-toolkit
-        volumes:
-            - ./src:/app/src
-            - /node_modules
-        ports:
-            - 3003:80
-        image: matsuepsilon/zd-2d-toolkit
-        stdin_open: true
-        tty: true
-        restart: always
-        networks:
-            - zd-2d
